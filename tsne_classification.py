@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 import xls_to_csv_parser
 
-
 class TsneTest():
     def __init__(self):
         prs = xls_to_csv_parser.Parser()
@@ -18,7 +17,9 @@ class TsneTest():
 
     def __make_tsne_plot(self, classification, lr, prp):
         fig = plt.figure()
-        plt.scatter(classification[:, 0], classification[:, 1], c=self.data['Пол'].map({0: 'b', 1: 'r', 2: 'g'}))
+        plt.scatter(classification[:, 0], classification[:, 1], c=self.data['Пол'].map({-1: 'yellow', 1: 'red', 2: 'green'}))
         print(str(lr) + ' rate done')
+        #plt.show()
         fig.savefig('graphs/tsne/' + str(lr) + str(prp) + 'lernR.png')
         plt.close(fig=fig)
+

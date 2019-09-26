@@ -1,3 +1,5 @@
+from itertools import takewhile, count
+
 from sklearn.cluster import KMeans
 import matplotlib
 from matplotlib import pyplot
@@ -26,3 +28,13 @@ class KmeansTest:
                 outp.write('\n\n')
             self.make_plot(kmeans_classifier)
             pyplot.show()
+
+    def exp_val(self):
+        self.interval_divide(self.data['Возраст'].values)
+
+    def interval_divide(self, param):
+        #l = takewhile(stop.__gt__, count(start, step))
+        pass
+
+test = KmeansTest()
+test.exp_val()
