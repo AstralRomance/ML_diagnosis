@@ -1,8 +1,21 @@
 import pandas as pd
-
+from sklearn.preprocessing import Normalizer
+from matplotlib import numpy as np
 
 
 class Parser:
+    def __init__(self):
+        self.age_group_matrix = [
+            (-1, -1, -1),
+            (0, 0, 0),
+            (0, 0, 1),
+            (0, 1, 0),
+            (0, 1, 1),
+            (1, 0, 0),
+            (1, 0, 1)
+        ]
+
+
     def parser(self):
         data_xls = pd.read_excel('datasetxls.xlsx', 'qword-20181205105452814', index_col=0)
         data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
@@ -25,36 +38,37 @@ class Parser:
             if dataset['Пол'][i] == 'Женский':
                 dataset['Пол'].values[i] = 2
 
+
+
         for i, j in enumerate(dataset['Возраст'].values):
             if j < 0.0:
-                dataset['Возраст'].values[i] = int(-1)
+                dataset.replace({'Возраст': self.age_group_matrix[0]})
 
             if j < 17.0 and j > 0.0:
-                dataset['Возраст'].values[i] = int(0)
+                dataset.replace({'Возраст': self.age_group_matrix[1]})
 
             if j >= 17.0 and j < 21.0:
-                dataset['Возраст'].values[i] = int(1)
+                dataset.replace({'Возраст': self.age_group_matrix[2]})
 
             if j >= 21.0 and j < 55.0:
-                dataset['Возраст'].values[i] = int(2)
+                dataset.replace({'Возраст': self.age_group_matrix[3]})
 
             if j >= 55.0 and j < 75.0:
-                dataset['Возраст'].values[i] = int(3)
+                dataset.replace({'Возраст': self.age_group_matrix[4]})
 
             if j >= 75.0 and j < 90.0:
-                dataset['Возраст'].values[i] = int(4)
+                dataset.replace({'Возраст': self.age_group_matrix[5]})
 
             if j >= 90.0:
-                dataset['Возраст'].values[i] = int(5)
+                dataset.replace({'Возраст': self.age_group_matrix[6]})
 
+        #nrm = Normalizer().fit(temp)
+        #nrm.transform(temp)
+        print(dataset)
         with open('temp2.txt', 'w') as temp:
-            for i in dataset['Пол'].values:
-                temp.write(str(i))
+            for i in dataset['Возраст'].values:
+                temp.write(str(i) + '\n')
 
-'''
-        for i, j in enumerate(dataset['Возраст'].values):
-            #print(dataset['Возраст'].values[j])
-            print(dataset['Возраст'].values[i])
-'''
-prs = Parser()
-prs.parser()
+
+parser = Parser()
+parser.parser()
