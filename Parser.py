@@ -44,14 +44,13 @@ class Parser:
 
 #   replace some parameters for matrix rows or calculated values
     def __simple_formalizing(self, dataset):
-        with open('temp1.txt', 'w') as temp:
-            for i in dataset['Пол'].values:
-                temp.write(str(i))
-        for i in range(len(dataset['Пол'].values)):
-            if dataset['Пол'][i] == 'Мужской':
-                dataset['Пол'].values[i] = 1
-            if dataset['Пол'][i] == 'Женский':
-                dataset['Пол'].values[i] = 2
+        for counter, sex in dataset['Пол'].values:
+            if sex == 'Мужской':
+                dataset['Пол'][counter] = 1
+            elif sex == 'Женский':
+                dataset['Пол'][counter] = 2
+            else:
+                dataset['Пол'][counter] = -1
 
         temp = []
         for j in dataset['Возраст'].values:

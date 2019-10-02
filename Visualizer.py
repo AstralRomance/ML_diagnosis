@@ -11,10 +11,10 @@ class Visualizer:
         fig = plt.figure()
         plt.scatter(data[:, 0], data[:, 1], c=predicted, s=50, cmap='viridis')
         if not centers.all():
-            fig.savefig('graphs/{0}/{1}'.format(estimator_name, param))
+            fig.savefig(f'graphs/{estimator_name}/{param}')
             plt.close(fig)
             return
         else:
             plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
-            fig.savefig('graphs/{0}/{1}'.format(estimator_name, param))
+            fig.savefig(f'graphs/{estimator_name}/{param}')
             plt.close(fig)
