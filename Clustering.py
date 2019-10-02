@@ -20,5 +20,6 @@ class Clustering:
         return str(type(estimator)).split('.')[-1][0:-2]
 
 #   return downgraded dataset saved in clustering class
+    @property
     def get_data(self):
         return self.data
