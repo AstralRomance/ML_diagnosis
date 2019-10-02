@@ -1,7 +1,6 @@
 from tsne_classification import *
 from kmeans_classification import *
 
-#kmn = KmeansTest()
 tsn = TsneTest()
-
-tsn.start_classification()
+classifier = KMeans_make(tsn.start_modeling())
+classifier.classification_start()

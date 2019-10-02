@@ -2,39 +2,27 @@ from itertools import takewhile, count
 
 from sklearn.cluster import KMeans
 import matplotlib
-from matplotlib import pyplot
+from matplotlib import pyplot as plt
 import pandas as pd
 
 import xls_to_csv_parser
 
-class KmeansTest:
-    def __init__(self):
-        prs = xls_to_csv_parser.Parser()
-        self.data = prs.parser()
+class KMeans_make:
+    def __init__(self, dataset):
+        self.data = dataset
 
-    def make_plot(self, classifier):
-        colormap = matplotlib.pyplot.cm.rainbow
-        norm = matplotlib.colors.Normalize(vmin=0, vmax=40)
-        axes = pd.plotting.scatter_matrix(self.data, color=colormap(norm(classifier.labels_)))
+    def classification_start(self):
+        for i in range(100, 5000, 200):
+            classifier = KMeans(n_clusters=4, max_iter=i, random_state=0).fit(self.data)
+            predict_val = classifier.predict(self.data)
+            #print(classifier.cluster_centers_)
+            self.make_plot(classifier, predict_val, classifier.cluster_centers_, i)
 
-    def KMeans_cluster(self):
-        for i in range(30):
-            kmeans_classifier = KMeans(n_clusters=3, max_iter=150).fit(self.data)
-            with open('prdc.txt', 'a') as tr:
-                tr.write(str(kmeans_classifier.fit_transform(self.data)))
-                tr.write('\n\n')
-            with open('res.txt', 'a') as outp:
-                outp.write(str(kmeans_classifier.cluster_centers_))
-                outp.write('\n\n')
-            self.make_plot(kmeans_classifier)
-            pyplot.show()
+    def make_plot(self, classifier, pred_val, centers, max_it):
+        fig = plt.figure()
+        plt.scatter(self.data[:, 0], self.data[:, 1], c=pred_val, s=50, cmap='viridis')
+        plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
+        # plt.show()
+        fig.savefig('graphs/kmeans/graph{0}.png'.format(max_it))
+        plt.close(fig=fig)
 
-    def exp_val(self):
-        self.interval_divide(self.data['Возраст'].values)
-
-    def interval_divide(self, param):
-        #l = takewhile(stop.__gt__, count(start, step))
-        pass
-
-test = KmeansTest()
-test.exp_val()

@@ -4,20 +4,25 @@ from matplotlib import numpy as np
 
 
 class Parser:
-    def __init__(self):
+    def __init__(self, parsed_file):
         self.age_group_matrix = [
-            (-1, -1, -1),
-            (0, 0, 0),
-            (0, 0, 1),
-            (0, 1, 0),
-            (0, 1, 1),
-            (1, 0, 0),
-            (1, 0, 1)
+            [-1, -1, -1],
+            [0, 0, 0],
+            [0, 0, 1],
+            [0, 1, 0],
+            [0, 1, 1],
+            [1, 0, 0],
+            [1, 0, 1]
         ]
-
+        self.sex_matrix = [
+            [-1, -1],
+            [0, 0],
+            [0, 1]
+        ]
+        self.to_parse = parsed_file
 
     def parser(self):
-        data_xls = pd.read_excel('datasetxls.xlsx', 'qword-20181205105452814', index_col=0)
+        data_xls = pd.read_excel(self.to_parse, 'part1', index_col=0)
         data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
 
         output_dataset = pd.read_csv('res_dataset.csv', sep=';')
@@ -39,36 +44,35 @@ class Parser:
                 dataset['Пол'].values[i] = 2
 
 
-
-        for i, j in enumerate(dataset['Возраст'].values):
+        temp = []
+        for j in dataset['Возраст'].values:
             if j < 0.0:
-                dataset.replace({'Возраст': self.age_group_matrix[0]})
+                temp.append(self.age_group_matrix[0])
 
             if j < 17.0 and j > 0.0:
-                dataset.replace({'Возраст': self.age_group_matrix[1]})
+                temp.append(self.age_group_matrix[1])
 
             if j >= 17.0 and j < 21.0:
-                dataset.replace({'Возраст': self.age_group_matrix[2]})
+                temp.append(self.age_group_matrix[2])
 
             if j >= 21.0 and j < 55.0:
-                dataset.replace({'Возраст': self.age_group_matrix[3]})
+                temp.append(self.age_group_matrix[3])
 
             if j >= 55.0 and j < 75.0:
-                dataset.replace({'Возраст': self.age_group_matrix[4]})
+                temp.append(self.age_group_matrix[4])
 
             if j >= 75.0 and j < 90.0:
-                dataset.replace({'Возраст': self.age_group_matrix[5]})
+                temp.append(self.age_group_matrix[5])
 
             if j >= 90.0:
-                dataset.replace({'Возраст': self.age_group_matrix[6]})
+                temp.append(self.age_group_matrix[6])
+        dataset = dataset.assign(Возрастная_группа=temp)
+        dataset = dataset.drop('Возраст', 1)
+        with open('temp2.txt', 'w') as tm:
+            for i in dataset.values:
+                for j in i:
+                    tm.write(str(j) + ' ')
+                tm.write('\n')
 
-        #nrm = Normalizer().fit(temp)
-        #nrm.transform(temp)
-        print(dataset)
-        with open('temp2.txt', 'w') as temp:
-            for i in dataset['Возраст'].values:
-                temp.write(str(i) + '\n')
-
-
-parser = Parser()
-parser.parser()
+    def change_parsed_file(self, file_path):
+        self.to_parse = file_path
