@@ -44,13 +44,11 @@ class Parser:
 
 #   replace some parameters for matrix rows or calculated values
     def __simple_formalizing(self, dataset):
-        for counter, sex in dataset['Пол'].values:
+        for counter, sex in enumerate(dataset['Пол'].values):
             if sex == 'Мужской':
-                dataset['Пол'][counter] = 1
-            elif sex == 'Женский':
-                dataset['Пол'][counter] = 2
-            else:
-                dataset['Пол'][counter] = -1
+                dataset['Пол'].values[counter] = 1
+            if sex == 'Женский':
+                dataset['Пол'].values[counter] = 2
 
         temp = []
         for j in dataset['Возраст'].values:
