@@ -8,6 +8,8 @@ parser = Parser('datasetxls.xlsx')
 plotter = Visualizer()
 # Dataset taken
 downgrader = Downgrader(parser.parse())
+analyzer = Analyzer()
+probs = []
 for i in range(50, 1000, 50):
     for j in range(10, 100, 10):
         for k in range(100, 5000, 200):
@@ -16,5 +18,5 @@ for i in range(50, 1000, 50):
             params = (res_cl[0], kmeans_clusters.get_data,
                       'tsne_parameters_' + str(i) + '_' + str(j) + '_kmeans_parameters_' + str(k), res_cl[1], res_cl[2])
             plotter.make_euclidean_space_plot(*params)
-            analyzer = Analyzer(res_cl[1])
-            analyzer.probability_calc()
+            probs.append(analyzer.probability_calc(kmeans_clusters.get_clustering_map))
+plotter.make_probability_plot(probs)
