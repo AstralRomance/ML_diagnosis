@@ -13,3 +13,7 @@ class Downgrader():
         classifier = TSNE(learning_rate=learning_rate, perplexity=perplexity)
         classification = classifier.fit_transform(self.data)
         return classification
+
+    @property
+    def get_unmodified_data(self):
+        return self.data

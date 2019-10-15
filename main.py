@@ -1,6 +1,6 @@
+import Classifier
 from Parser import Parser
 from Downgrader import Downgrader
-from Clustering import Clustering
 from Visualizer import Visualizer
 from Analyzer import Analyzer
 
@@ -9,14 +9,23 @@ plotter = Visualizer()
 # Dataset taken
 downgrader = Downgrader(parser.parse())
 analyzer = Analyzer()
-probs = []
 for i in range(50, 1000, 50):
     for j in range(10, 100, 10):
+        pass
+        """
+        DEBUG VERSION. BLOCK FOR KMEANS CLUSTERING USAGE
         for k in range(100, 5000, 200):
-            kmeans_clusters = Clustering(downgrader.downgrade(i, j))
+            
+            kmeans_clusters = Classifier(downgrader.downgrade(i, j))
             res_cl = kmeans_clusters.kmeans_clustering(k)
             params = (res_cl[0], kmeans_clusters.get_data,
                       'tsne_parameters_' + str(i) + '_' + str(j) + '_kmeans_parameters_' + str(k), res_cl[1], res_cl[2])
             plotter.make_euclidean_space_plot(*params)
-            probs.append(analyzer.probability_calc(kmeans_clusters.get_clustering_map))
-plotter.make_probability_plot(probs)
+            analyzer.probability_calc(kmeans_clusters.get_clustering_map)
+        """
+
+regression = Classifier.RegressionMethod(downgrader.get_unmodified_data)
+regression.training()
+regression.prediction()
+
+#plotter.make_probability_plot(analyzer.get_total_probability)

@@ -1,4 +1,5 @@
 import pandas as pd
+
 '''
 class take excel table and make csv dataset with formalized data 
 
@@ -42,6 +43,12 @@ class Parser:
         self.__simple_formalizing(output_dataset)
         return output_dataset
 
+
+#   change source file
+    def change_parsed_file(self, file_path):
+        self.to_parse = file_path
+
+
 #   replace some parameters for matrix rows or calculated values
     def __simple_formalizing(self, dataset):
         for counter, sex in enumerate(dataset['Пол'].values):
@@ -77,6 +84,3 @@ class Parser:
                     tm.write(str(j) + ' ')
                 tm.write('\n')
 
-#   change source file
-    def change_parsed_file(self, file_path):
-        self.to_parse = file_path
