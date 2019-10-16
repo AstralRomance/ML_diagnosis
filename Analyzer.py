@@ -40,11 +40,18 @@ class Analyzer:
                         sum_dict.get(clusters)[1]/points_per_cluster[clusters]])
         return res
 
+    def pred_start_difference(self, real_data, predicted):
+        t = []
+        with open('Linear regression difference.txt', 'w') as diff_file:
+            for i, j in enumerate(real_data):
+                diff_file.write(str(real_data[i]-predicted[i]) + '\n')
+                print(str(real_data[i]-predicted[i]))
+                t.append(real_data[i]-predicted[i])
+        return t
 
     @property
     def get_total_probability(self):
         return self.probability_list
-
 
 #   Closed method to print probability per cluster
 

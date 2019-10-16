@@ -29,3 +29,8 @@ class Visualizer:
         plt.plot([i for i in probability[3]])
         plt.savefig('prob_change.png')
 
+    def make_linear_plot(self, points_x, points_y):
+        plt.plot([i for i in points_x],[i for i in points_y])
+        plt.savefig('regression_error_change_per_training_data_length.png')
+
+

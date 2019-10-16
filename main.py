@@ -9,10 +9,10 @@ plotter = Visualizer()
 # Dataset taken
 downgrader = Downgrader(parser.parse())
 analyzer = Analyzer()
-for i in range(50, 1000, 50):
-    for j in range(10, 100, 10):
-        pass
-        """
+#for i in range(50, 1000, 50):
+#    for j in range(10, 100, 10):
+#        pass
+"""
         DEBUG VERSION. BLOCK FOR KMEANS CLUSTERING USAGE
         for k in range(100, 5000, 200):
             
@@ -22,10 +22,13 @@ for i in range(50, 1000, 50):
                       'tsne_parameters_' + str(i) + '_' + str(j) + '_kmeans_parameters_' + str(k), res_cl[1], res_cl[2])
             plotter.make_euclidean_space_plot(*params)
             analyzer.probability_calc(kmeans_clusters.get_clustering_map)
-        """
+"""
+#THE BEST TRAINING LENGTH = 1150
+abs_err = []
+for i in range(200, 1500, 20):
+    regression = Classifier.RegressionMethod(downgrader.get_unmodified_data, i)
+    regression.training()
+    abs_err.append(regression.prediction())
 
-regression = Classifier.RegressionMethod(downgrader.get_unmodified_data)
-regression.training()
-regression.prediction()
-
+plotter.make_linear_plot([i for i in range(200, 1500, 20)], abs_err)
 #plotter.make_probability_plot(analyzer.get_total_probability)

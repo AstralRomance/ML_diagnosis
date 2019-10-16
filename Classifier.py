@@ -1,5 +1,7 @@
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error
+
 
 '''
 Classifier parent class
@@ -40,25 +42,34 @@ class KMeansClassifier(Classifier):
 
 
 class RegressionMethod(Classifier):
-    def __init__(self, train):
+    def __init__(self, train, train_length):
         super().__init__(train)
         self.classifier = None
+        self.train_length = train_length
 
     def training(self):
         self.classifier = LinearRegression()
         self.classifier.fit(self._get_train_data(), self._get_train_features())
 
     def prediction(self):
+        t = []
         for i in self._get_test():
-            t = self.classifier.predict([i])
-            print(t)
+            t.append(*self.classifier.predict([i]))
+        return mean_absolute_error(self._get_test_true(), t)
 
-    def _get_train_data(self):
-        return self.classifier_data[0:1000:].drop('К0011', 1).values
+    def drop_parameters(self):
+        pass
+
+    def _get_train_data(self, drops=None):
+        return self.classifier_data[0:self.train_length:].drop('К0011', 1).values
 
     def _get_train_features(self):
-        return self.classifier_data['К0011'].values[0:1000:]
+        return self.classifier_data['К0011'].values[0:self.train_length:]
 
-    def _get_test(self):
-        return self.classifier_data[1000::].drop('К0011', 1).values
+    def _get_test(self, drops=None):
+        return self.classifier_data[self.train_length::].drop('К0011', 1).values
+
+    def _get_test_true(self):
+        return self.classifier_data['К0011'].values[self.train_length::]
+
 

@@ -38,6 +38,10 @@ class Parser:
         output_dataset = pd.read_csv('res_dataset.csv', sep=';')
         output_dataset = output_dataset.drop('№', 1)
         output_dataset = output_dataset.drop('%Код экземпляра', 1)
+        output_dataset = output_dataset.drop('ADn', 1)
+        output_dataset = output_dataset.drop('ADv', 1)
+        output_dataset = output_dataset.drop('SQR', 1)
+        output_dataset = output_dataset.drop('PULS', 1)
 
         output_dataset = output_dataset.fillna(-1)
         self.__simple_formalizing(output_dataset)
@@ -51,17 +55,27 @@ class Parser:
 
 #   replace some parameters for matrix rows or calculated values
     def __simple_formalizing(self, dataset):
+        imt = []
+        for counter, val in enumerate(dataset['VES'].values):
+            imt.append(dataset['VES'].values[counter]/(dataset['ROST'].values[counter]/100)**2)
+
         for counter, sex in enumerate(dataset['Пол'].values):
             if sex == 'Мужской':
                 dataset['Пол'].values[counter] = 1
             if sex == 'Женский':
                 dataset['Пол'].values[counter] = 2
 
+        dataset = dataset.assign(IMT=imt)
+        dataset = dataset.drop('ROST', 1)
+        dataset = dataset.drop('VES', 1)
+        dataset = dataset.drop('IND', 1)
+
+        dataset = dataset.fillna(-1)
+
         temp = []
         for j in dataset['Возраст'].values:
             if j < 0.0:
                 temp.append(self.age_group_matrix[0])
-
             if j < 17.0 and j > 0.0:
                 temp.append(self.age_group_matrix[1])
             if j >= 17.0 and j < 21.0:
@@ -83,4 +97,3 @@ class Parser:
                 for j in i:
                     tm.write(str(j) + ' ')
                 tm.write('\n')
-
