@@ -57,7 +57,10 @@ class Parser:
     def __simple_formalizing(self, dataset):
         imt = []
         for counter, val in enumerate(dataset['VES'].values):
-            imt.append(dataset['VES'].values[counter]/(dataset['ROST'].values[counter]/100)**2)
+            if val == 0 or dataset['ROST'].values[counter] == 0:
+                imt.append(-1)
+            else:
+                imt.append(dataset['VES'].values[counter]/(dataset['ROST'].values[counter]/100)**2)
 
         for counter, sex in enumerate(dataset['Пол'].values):
             if sex == 'Мужской':

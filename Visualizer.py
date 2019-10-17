@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+import matplotlib.gridspec as gridspec
 
 '''
 Class for make plots
@@ -29,8 +30,11 @@ class Visualizer:
         plt.plot([i for i in probability[3]])
         plt.savefig('prob_change.png')
 
-    def make_linear_plot(self, points_x, points_y):
-        plt.plot([i for i in points_x],[i for i in points_y])
-        plt.savefig('regression_error_change_per_training_data_length.png')
-
-
+    def make_compare_plot(self, points_x, points_y, name):
+        fig = plt.figure()
+        number_of_graphics = max(list(map(len, [i for i in points_y])))
+        gs = gridspec.GridSpec(number_of_graphics, 1, fig)
+        for i in range(number_of_graphics):
+            fig.add_subplot(gs[i, 0], )
+            plt.plot(points_x, [j[i] for j in points_y])
+        plt.savefig(f'{name}.png')

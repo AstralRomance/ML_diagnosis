@@ -1,6 +1,8 @@
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
+
 from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import r2_score
 
 
 '''
@@ -55,7 +57,7 @@ class RegressionMethod(Classifier):
         t = []
         for i in self._get_test():
             t.append(*self.classifier.predict([i]))
-        return mean_absolute_error(self._get_test_true(), t)
+        return (mean_absolute_error(self._get_test_true(), t), r2_score(self._get_test_true(), t))
 
     def drop_parameters(self):
         pass

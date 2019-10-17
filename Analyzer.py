@@ -11,15 +11,12 @@ class Analyzer:
         self.avg_cluster_probability = []
         self.probability_list = []
 
-
 #   Probability calculating for clusters
-
     def probability_calc(self, point_dict):
         total_points = sum(map(len, point_dict.values()))
         prob_per_cluster = [(len(point_dict.get(i))/total_points)*100 for i in point_dict.keys()]
         self.__probability_print(prob_per_cluster)
         self.probability_list.append(prob_per_cluster)
-
 
 #   Counting math expectation for each component per clusters
 #   Return list with expectation for each component per cluster

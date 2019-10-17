@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 import Classifier
 from Parser import Parser
 from Downgrader import Downgrader
@@ -9,10 +11,11 @@ plotter = Visualizer()
 # Dataset taken
 downgrader = Downgrader(parser.parse())
 analyzer = Analyzer()
-#for i in range(50, 1000, 50):
-#    for j in range(10, 100, 10):
-#        pass
 """
+for i in range(50, 1000, 50):
+    for j in range(10, 100, 10):
+        pass
+
         DEBUG VERSION. BLOCK FOR KMEANS CLUSTERING USAGE
         for k in range(100, 5000, 200):
             
@@ -25,10 +28,10 @@ analyzer = Analyzer()
 """
 #THE BEST TRAINING LENGTH = 1150
 abs_err = []
-for i in range(200, 1500, 20):
+for i in range(200, 1900, 10):
     regression = Classifier.RegressionMethod(downgrader.get_unmodified_data, i)
     regression.training()
     abs_err.append(regression.prediction())
 
-plotter.make_linear_plot([i for i in range(200, 1500, 20)], abs_err)
-#plotter.make_probability_plot(analyzer.get_total_probability)
+plotter.make_compare_plot([i for i in range(200, 1900, 10)], abs_err, 'abs_error_and_r2_comparison')
+plt.show()
