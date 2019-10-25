@@ -28,16 +28,12 @@ class Classifier:
 
 
 class KMeansClassifier(Classifier):
-    def training(self, max_iter, random_state):
-        classifier = KMeans(n_clusters=4, max_iter=max_iter, random_state=random_state).fit(self.classifier_data)
+    def training(self, max_iter, random_state=None):
+        classifier = KMeans(n_clusters=10, max_iter=max_iter, random_state=random_state).fit(self.classifier_data)
         predict_val = classifier.predict(self.classifier_data)
-        temp = [[], [], [], []]
-        for i, j in enumerate(predict_val):
-            temp[j].append(self.classifier_data[i])
-        for i, j in enumerate(temp):
-            self.res_map[i] = j
-        print(self.res_map)
-        return self.estimator_type(classifier), self.res_map
+        for counter, cluster in enumerate(predict_val):
+            self.res_map[cluster] = self.classifier_data[counter]
+        return self.estimator_type(classifier)
 
     def prediction(self):
         pass
