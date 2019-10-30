@@ -22,7 +22,6 @@ class Visualizer:
             plt.close(fig)
 
 #   Plot for probability change visualising
-
     def make_probability_plot(self, probability):
         plt.plot([i for i in probability[0]])
         plt.plot([i for i in probability[1]])
@@ -38,3 +37,9 @@ class Visualizer:
             fig.add_subplot(gs[i, 0], )
             plt.plot(points_x, [j[i] for j in points_y])
         plt.savefig(f'{name}.png')
+
+    def make_simple_graph(self, points_x, i):
+        fig = plt.figure()
+        plt.plot([x for x in points_x])
+        plt.savefig(f'graphs/normal_analysis/intervals with step {i}.png')
+        plt.close(fig)
