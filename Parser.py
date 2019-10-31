@@ -27,6 +27,8 @@ class Parser:
             [0, 1]
         ]
         self.to_parse = parsed_file
+        self.patient_id = None
+        self.dataset_unmodified = None
 
 #   reading file with parsed_file path and converts to csv
 #   dataset with only useful parameters with the next data formalizing
@@ -36,17 +38,11 @@ class Parser:
         data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
 
         output_dataset = pd.read_csv('res_dataset.csv', sep=';')
-        output_dataset = output_dataset.drop('№', 1)
-        output_dataset = output_dataset.drop('%Код экземпляра', 1)
-        output_dataset = output_dataset.drop('ADn', 1)
-        output_dataset = output_dataset.drop('ADv', 1)
-        output_dataset = output_dataset.drop('SQR', 1)
-        output_dataset = output_dataset.drop('PULS', 1)
-
         output_dataset = output_dataset.fillna(-1)
-        self.__simple_formalizing(output_dataset)
-        return output_dataset
+        self.dataset_unmodified = output_dataset
 
+    def remove_useless(self, dataset, useless_fields):
+        pass
 
 #   change source file
     def change_parsed_file(self, file_path):
@@ -100,3 +96,7 @@ class Parser:
                 for j in i:
                     tm.write(str(j) + ' ')
                 tm.write('\n')
+
+    @property
+    def get_dataset_unmodified(self):
+        return self.dataset_unmodified

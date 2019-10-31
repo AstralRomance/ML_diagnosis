@@ -13,8 +13,9 @@ from Analyzer import Analyzer
 parser = Parser('datasetxls.xlsx')
 plotter = Visualizer()
 # Dataset taken
-downgrader = Downgrader(parser.parse())
-analyzer = Analyzer(downgrader.get_unmodified_data)
+downgrader = Downgrader()
+downgrader.downgrade(parser.parse(), 0, 1)
+analyzer = Analyzer(parser.get_dataset_unmodified)
 '''
 for i in range(50, 1000, 50):
     for j in range(10, 100, 10):
@@ -38,7 +39,6 @@ for i in range(50, 1000, 50):
 print((downgrader.get_unmodified_data['К0011'].values))
 print(analyzer.normal_check(downgrader.get_unmodified_data['К0011'].values))
 print(analyzer.normal_check(downgrader.get_unmodified_data['К0011'].values))
-plt.hist(downgrader.get_unmodified_data['К0011'].values)
 for i in np.arange(0.1, 1.1, 0.1):
     intervals = analyzer.make_intervals(i)
     for interval in intervals.values():
@@ -47,5 +47,11 @@ for i in np.arange(0.1, 1.1, 0.1):
             print(f'current step is {i} {analyzer.normal_check(interval)}')
         except ValueError:
             print(f'current step is {i} and something goes wrong, current interval length {len(interval)}')
-plt.show()
+
+regression_error = []
+for i in range(200, 1900, 10):
+    regression = Classifier.RegressionMethod(downgrader.get_unmodified_data, i)
+    regression.training()
+    regression_error.append(regression.prediction())
+plotter.make_compare_plot([i for i in range(200, 1900, 10)], regression_error, 'abs_error_and_r2_comparison')
 
