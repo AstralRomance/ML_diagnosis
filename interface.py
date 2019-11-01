@@ -9,24 +9,18 @@ from Parser import Parser
 parser = Parser('datasetxls.xlsx')
 parser.parse()
 print(*parser.get_dataset_unmodified.keys())
-
+#t = '\n'.join(parser.get_dataset_unmodified.keys())
+#print(t)
 questions = [
     {
         'type': 'checkbox',
         'qmark': '😃',
-        'message': 'Select toppings',
-        'name': 'toppings',
-        'choices': [
-            Separator('Cells of dataset'),
-            {
-                'name' : [i for i in parser.get_dataset_unmodified.keys()]
-            }
-
-        ],
-        'validate': lambda answer: 'You must choose at least one topping.' \
-            if len(answer) == 0 else True
+        'message': 'choose useless',
+        'name': 'useless_columns',
+        'choices': [{'name': i} for i in parser.get_dataset_unmodified.keys()]
     }
 ]
 
 answers = prompt(questions, style=custom_style_2)
-pprint(answers)
+parser.remove_useless(*answers.values())
+print(parser.dataset_no_useless)

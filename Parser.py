@@ -29,6 +29,7 @@ class Parser:
         self.to_parse = parsed_file
         self.patient_id = None
         self.dataset_unmodified = None
+        self.dataset_no_useless = None
 
 #   reading file with parsed_file path and converts to csv
 #   dataset with only useful parameters with the next data formalizing
@@ -41,8 +42,10 @@ class Parser:
         output_dataset = output_dataset.fillna(-1)
         self.dataset_unmodified = output_dataset
 
-    def remove_useless(self, dataset, useless_fields):
-        pass
+    def remove_useless(self, useless_fields):
+        self.dataset_no_useless = self.dataset_unmodified
+        for i in useless_fields:
+            self.dataset_no_useless = self.dataset_no_useless.drop(i, 1)
 
 #   change source file
     def change_parsed_file(self, file_path):
