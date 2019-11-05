@@ -10,7 +10,7 @@ sex_matrix - matrix for using as sex; -1 -1 for empty age cells
 '''
 
 
-class Parser:
+class DataPreparer:
     def __init__(self, parsed_file):
         self.age_group_matrix = [
             [-1, -1, -1],
@@ -41,64 +41,90 @@ class Parser:
         output_dataset = pd.read_csv('res_dataset.csv', sep=';')
         output_dataset = output_dataset.fillna(-1)
         self.dataset_unmodified = output_dataset
-
-    def remove_useless(self, useless_fields):
         self.dataset_no_useless = self.dataset_unmodified
-        for i in useless_fields:
-            self.dataset_no_useless = self.dataset_no_useless.drop(i, 1)
+
+    def remove_useless(self, useless_fields=None):
+        if useless_fields:
+            for i in useless_fields:
+                self.dataset_no_useless = self.dataset_no_useless.drop(i, 1)
+            temp = 0
+            for columns in self.dataset_no_useless:
+                for val in self.dataset_no_useless[columns]:
+                    if val == -1:
+                        temp += 1
+                if temp/len(self.dataset_no_useless[columns]) >= 0.5:
+                    self.dataset_no_useless = self.dataset_no_useless.drop(columns, 1)
+                temp = 0
+
+        else:
+            print('Nothing to delete')
+            return 0
+
+    def gender_changes(self, gender_column):
+        if gender_column:
+            temp = []
+            for gender in self.dataset_no_useless[gender_column]:
+                if str(gender) == 'Мужской':
+                    temp.append(self.sex_matrix[1])
+                if str(gender) == 'Женский':
+                    temp.append(self.sex_matrix[2])
+                if str(gender) == '-1':
+                    temp.append(self.sex_matrix[0])
+            print(len(temp))
+            print(len(self.dataset_no_useless[gender_column].values))
+            self.dataset_no_useless = self.dataset_no_useless.drop(gender_column, 1)
+            self.dataset_no_useless = self.dataset_no_useless.assign(Gender=temp)
+        else:
+            print('Nothing to delete')
+            return 0
+
+    def replace_to_BMI(self, w_h_columns=None):
+        if w_h_columns:
+            temp = []
+            for i, vals in enumerate(self.dataset_no_useless[w_h_columns[0]].values):
+                if float(self.dataset_no_useless[w_h_columns[1]][i]) == 0.0 or float(self.dataset_no_useless[w_h_columns[1]][i]) == -1.0:
+                    temp.append(float(self.dataset_no_useless[w_h_columns[0]][i])/(float(self.dataset_no_useless[w_h_columns[1]][i])/100)**2)
+                else:
+                    temp.append(0)
+                    continue
+            for cols in w_h_columns:
+                self.dataset_no_useless = self.dataset_no_useless.drop(cols, 1)
+            self.dataset_no_useless = self.dataset_no_useless.assign(BMI=temp)
+        else:
+            print('Nothing to delete')
+            return 0
+
+    def ages_change(self, ages_column=None):
+        if ages_column:
+            temp = []
+            for j in self.dataset_no_useless[ages_column].values:
+                if float(j) < 0.0:
+                    temp.append(self.age_group_matrix[0])
+                if 0 <= float(j) < 17.0:
+                    temp.append(self.age_group_matrix[1])
+                if 17.0 <= float(j) < 21.0:
+                    temp.append(self.age_group_matrix[2])
+                if 21.0 <= float(j) < 55.0:
+                    temp.append(self.age_group_matrix[3])
+                if 55.0 <= float(j) < 75.0:
+                    temp.append(self.age_group_matrix[4])
+                if 75.0 <= float(j) < 90.0:
+                    temp.append(self.age_group_matrix[5])
+                if float(j) >= 90.0:
+                    temp.append(self.age_group_matrix[6])
+            self.dataset_no_useless = self.dataset_no_useless.assign(Gender_group=temp)
+            self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
+        else:
+            print('Nothing to delete')
+            return 0
 
 #   change source file
     def change_parsed_file(self, file_path):
         self.to_parse = file_path
 
-
-#   replace some parameters for matrix rows or calculated values
-    def __simple_formalizing(self, dataset):
-        imt = []
-        for counter, val in enumerate(dataset['VES'].values):
-            if val == 0 or dataset['ROST'].values[counter] == 0:
-                imt.append(-1)
-            else:
-                imt.append(dataset['VES'].values[counter]/(dataset['ROST'].values[counter]/100)**2)
-
-        for counter, sex in enumerate(dataset['Пол'].values):
-            if sex == 'Мужской':
-                dataset['Пол'].values[counter] = 1
-            if sex == 'Женский':
-                dataset['Пол'].values[counter] = 2
-
-        dataset = dataset.assign(IMT=imt)
-        dataset = dataset.drop('ROST', 1)
-        dataset = dataset.drop('VES', 1)
-        dataset = dataset.drop('IND', 1)
-
-        dataset = dataset.fillna(-1)
-
-        temp = []
-        for j in dataset['Возраст'].values:
-            if j < 0.0:
-                temp.append(self.age_group_matrix[0])
-            if j < 17.0 and j > 0.0:
-                temp.append(self.age_group_matrix[1])
-            if j >= 17.0 and j < 21.0:
-                temp.append(self.age_group_matrix[2])
-            if j >= 21.0 and j < 55.0:
-                temp.append(self.age_group_matrix[3])
-            if j >= 55.0 and j < 75.0:
-                temp.append(self.age_group_matrix[4])
-            if j >= 75.0 and j < 90.0:
-                temp.append(self.age_group_matrix[5])
-            if j >= 90.0:
-                temp.append(self.age_group_matrix[6])
-        dataset = dataset.assign(Возрастная_группа=temp)
-        dataset = dataset.drop('Возраст', 1)
-
-        #   debug info, check for correct changes in dataset
-        with open('temp2.txt', 'w') as tm:
-            for i in dataset.values:
-                for j in i:
-                    tm.write(str(j) + ' ')
-                tm.write('\n')
+    @property
+    def get_dataset_no_useless(self):
+        return self.dataset_no_useless
 
     @property
     def get_dataset_unmodified(self):

@@ -10,9 +10,9 @@ Classifier parent class
 '''
 
 class Classifier:
-    def __init__(self, train, train_length):
+    def __init__(self, data, train_length):
         self.classifier = None
-        self.classifier_data = train
+        self.classifier_data = data
         self.train_distr = self.make_train_distr(train_length)
         self.test_distr = self.make_test_distr(train_length)
         self.res_map = {}
@@ -36,11 +36,11 @@ class Classifier:
 
 
 class KMeansClassifier(Classifier):
-    def __init__(self, data, cluster_num, train_length):
-        super().__init__(train_length)
+    def __init__(self, data, train_length=400):
+        super().__init__(data, train_length)
         self.classifier = None
 
-    def training(self, clusters, max_iter, random_state=None):
+    def training(self, max_iter, clusters=3, random_state=None):
         self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter, random_state=random_state).fit(self.train_distr)
 
     def prediction(self):

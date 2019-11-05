@@ -14,35 +14,14 @@ class Analyzer:
         self.input_data.sort()
         print(self.input_data)
 
-#   Probability calculating for clusters
+#   Probability calculating per clusters
     def probability_per_cluster(self, point_dict):
         total_points = sum(map(len, point_dict.values()))
         prob_per_cluster = [(len(point_dict.get(i))/total_points)*100 for i in point_dict.keys()]
         self.__probability_print(prob_per_cluster)
         self.probability_list.append(prob_per_cluster)
 
-#   Counting math expectation for each component per clusters
-#   Return list with expectation for each component per cluster
-
-    def math_expectation(self, cluster_dict):
-        res = []
-        for clusters in cluster_dict.keys():
-            #print(group_sum)
-            res.append(sum(cluster_dict[clusters])/len(cluster_dict.get(clusters)))
-        return res
-
-    def dispersion(self, cluster_dict):
-        res = []
-        temp = 0
-        for cluster in cluster_dict:
-            cluster_len = len(cluster_dict[cluster])
-            mid = sum(cluster_dict[cluster])/cluster_len
-            for point in cluster_dict[cluster]:
-                temp += (point - mid)**2
-            res.append(temp/cluster_len)
-            temp = 0
-        return res
-
+#   Returns local extreme points
     def extreme_found(self, cluster_dict):
         extreme_max = {}
         extreme_min = {}
@@ -55,7 +34,6 @@ class Analyzer:
     def make_intervals(self, step):
         start_interval = min(self.input_data)
         finish_interval = start_interval + step
-        #print(start_interval)
         current_step = step
         res_dict = {}
         temp = []
