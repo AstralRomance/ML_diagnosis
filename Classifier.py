@@ -41,10 +41,10 @@ class KMeansClassifier(Classifier):
         self.classifier = None
 
     def training(self, max_iter, clusters=3, random_state=None):
-        self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter, random_state=random_state).fit(self.train_distr)
+        self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter, random_state=random_state).fit([self.train_distr.values])
 
     def prediction(self):
-        predict_val = self.classifier.predict(self.test_distr)
+        predict_val = self.classifier.predict([self.test_distr.values])
         for counter, cluster in enumerate(predict_val):
             self.res_map[cluster] = self.classifier_data[counter]
         return self.estimator_type(self.classifier)

@@ -55,25 +55,24 @@ class DataPreparer:
                 if temp/len(self.dataset_no_useless[columns]) >= 0.5:
                     self.dataset_no_useless = self.dataset_no_useless.drop(columns, 1)
                 temp = 0
-
+            for i in self.dataset_no_useless:
+                for val in self.dataset_no_useless[i]:
+                    if (type(val) == str) and (('>' in val) or ('<' in val)):
+                        self.dataset_no_useless.loc[self.dataset_no_useless[i] == val, i] = val[1::]
         else:
             print('Nothing to delete')
             return 0
 
+    def dataset_to_numeric(self):
+        for col in self.dataset_no_useless.columns:
+            self.dataset_no_useless[col] = pd.to_numeric(self.dataset_no_useless[col], errors='ignore', downcast='float')
+
     def gender_changes(self, gender_column):
         if gender_column:
             temp = []
-            for gender in self.dataset_no_useless[gender_column]:
-                if str(gender) == 'Мужской':
-                    temp.append(self.sex_matrix[1])
-                if str(gender) == 'Женский':
-                    temp.append(self.sex_matrix[2])
-                if str(gender) == '-1':
-                    temp.append(self.sex_matrix[0])
-            print(len(temp))
-            print(len(self.dataset_no_useless[gender_column].values))
-            self.dataset_no_useless = self.dataset_no_useless.drop(gender_column, 1)
-            self.dataset_no_useless = self.dataset_no_useless.assign(Gender=temp)
+            self.dataset_no_useless[gender_column] = self.dataset_no_useless[gender_column].map(
+                {'Мужской':self.sex_matrix[1], 'Женский':self.sex_matrix[2], '-1':self.sex_matrix[0]}
+            )
         else:
             print('Nothing to delete')
             return 0
@@ -83,10 +82,10 @@ class DataPreparer:
             temp = []
             for i, vals in enumerate(self.dataset_no_useless[w_h_columns[0]].values):
                 if float(self.dataset_no_useless[w_h_columns[1]][i]) == 0.0 or float(self.dataset_no_useless[w_h_columns[1]][i]) == -1.0:
-                    temp.append(float(self.dataset_no_useless[w_h_columns[0]][i])/(float(self.dataset_no_useless[w_h_columns[1]][i])/100)**2)
-                else:
                     temp.append(0)
-                    continue
+                else:
+                    temp.append(float(self.dataset_no_useless[w_h_columns[0]][i]) /
+                                (float(self.dataset_no_useless[w_h_columns[1]][i]) / 100) ** 2)
             for cols in w_h_columns:
                 self.dataset_no_useless = self.dataset_no_useless.drop(cols, 1)
             self.dataset_no_useless = self.dataset_no_useless.assign(BMI=temp)
@@ -112,7 +111,7 @@ class DataPreparer:
                     temp.append(self.age_group_matrix[5])
                 if float(j) >= 90.0:
                     temp.append(self.age_group_matrix[6])
-            self.dataset_no_useless = self.dataset_no_useless.assign(Gender_group=temp)
+            self.dataset_no_useless = self.dataset_no_useless.assign(Age_group=temp)
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
         else:
             print('Nothing to delete')

@@ -19,10 +19,10 @@ dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_
 dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose weight and height columns (following is important)',
                                                'BMI_replaceing').values())
+dp.dataset_to_numeric()
 
-for train_len in range(10, 700):
-    kmeans = KMeansClassifier(dp.dataset_no_useless, train_len)
-    for cluster_num in range(3, 5):
-        for max_iter in range(100, 5000):
-            kmeans.training(max_iter, cluster_num)
-            print(kmeans.get_result_map)
+for max_tr in range(100, 700, 20):
+    for max_i in range(100, 5000, 100):
+        kmeans = KMeansClassifier(dp.get_dataset_no_useless, max_tr)
+        kmeans.training(max_i)
+        kmeans.prediction()
