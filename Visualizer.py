@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
+import seaborn as sns
 
 '''
 Class for make plots
@@ -43,3 +44,8 @@ class Visualizer:
         plt.plot([x for x in points_x])
         plt.savefig(f'graphs/normal_analysis/intervals with step {i}.png')
         plt.close(fig)
+
+
+    def make_heatmap(self, data):
+        sns.heatmap(data.corr(), annot=True)
+        plt.show()

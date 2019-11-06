@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 
@@ -10,12 +12,20 @@ Classifier parent class
 '''
 
 class Classifier:
-    def __init__(self, train, train_length):
+    def __init__(self, data, train_length):
         self.classifier = None
-        self.classifier_data = train
+        self.res_map = None
+        self.classifier_data = data
         self.train_distr = self.make_train_distr(train_length)
         self.test_distr = self.make_test_distr(train_length)
-        self.res_map = {}
+
+    @abstractmethod
+    def train(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def predict(self):
+        raise NotImplementedError
 
     def estimator_type(self, estimator):
         return str(type(estimator)).split('.')[-1][0:-2]
@@ -36,33 +46,39 @@ class Classifier:
 
 
 class KMeansClassifier(Classifier):
-    def __init__(self, data, cluster_num, train_length):
-        super().__init__(train_length)
-        self.classifier = None
+    def __init__(self, data, train_length):
+        super().__init__(data, train_length)
 
-    def training(self, clusters, max_iter, random_state=None):
-        self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter, random_state=random_state).fit(self.train_distr)
+    def train(self, clusters=3, max_iter=300):
+        self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter)
+        self.classifier.fit([i for i in self.train_distr.values])
 
-    def prediction(self):
-        predict_val = self.classifier.predict(self.test_distr)
-        for counter, cluster in enumerate(predict_val):
-            self.res_map[cluster] = self.classifier_data[counter]
-        return self.estimator_type(self.classifier)
+    def predict(self):
+        prediction = self.classifier.predict([i for i in self.test_distr.values])
+        return prediction
 
+    def choose_clustering_columns(self, valid_columns):
+        #print(valid_columns)
+        for col in self.train_distr:
+            if col not in valid_columns:
+                self.train_distr.drop(col, 1)
+                self.test_distr.drop(col, 1)
+                
 
 class RegressionMethod(Classifier):
     def __init__(self, data, train_length):
         super().__init__(data, train_length)
 
-    def training(self):
+    def train(self):
         self.classifier = LinearRegression()
         actual_train_data = self.train_distr.drop('К0011', 1)
         self.classifier.fit(actual_train_data, self._get_train_features())
 
-    def prediction(self):
+    def predict(self):
         actual_test_data = self.train_distr.drop('К0011', 1)
         return mean_absolute_error(self._get_test_true(), self.classifier.predict(actual_test_data)),\
                r2_score(self._get_test_true(), self.classifier.predict(actual_test_data))
+
 
     def _get_train_features(self):
         return self.train_distr['К0011'].values
