@@ -36,18 +36,18 @@ class Classifier:
 
 
 class KMeansClassifier(Classifier):
-    def __init__(self, data, train_length=400):
+    def __init__(self, data, train_length):
         super().__init__(data, train_length)
-        self.classifier = None
 
-    def training(self, max_iter, clusters=3, random_state=None):
-        self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter, random_state=random_state).fit([self.train_distr.values])
+    def train(self, clusters=3, max_iter=300):
+        self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter)
+        self.classifier.fit([i for i in self.train_distr.values])
 
-    def prediction(self):
-        predict_val = self.classifier.predict([self.test_distr.values])
-        for counter, cluster in enumerate(predict_val):
-            self.res_map[cluster] = self.classifier_data[counter]
-        return self.estimator_type(self.classifier)
+    def predict(self):
+        temp = self.classifier.predict([i for i in self.test_distr.values])
+        with open('clusters.txt', 'w') as oputp:
+            oputp.write(str([i for i in temp]))
+
 
 
 class RegressionMethod(Classifier):

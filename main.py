@@ -1,3 +1,5 @@
+from sklearn.cluster import KMeans
+
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
 from Downgrader import Downgrader
@@ -21,8 +23,8 @@ dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_
                                                'BMI_replaceing').values())
 dp.dataset_to_numeric()
 
-for max_tr in range(100, 700, 20):
-    for max_i in range(100, 5000, 100):
-        kmeans = KMeansClassifier(dp.get_dataset_no_useless, max_tr)
-        kmeans.training(max_i)
-        kmeans.prediction()
+
+print(dp.get_dataset_no_useless)
+kmeans = KMeansClassifier(dp.get_dataset_no_useless, 500)
+kmeans.train()
+kmeans.predict()
