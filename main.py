@@ -1,10 +1,11 @@
+import time
+
+import numpy as np
 from matplotlib import pyplot as plt
 
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
-from Downgrader import Downgrader
-from Classifier import KMeansClassifier
-from Visualizer import Visualizer
+
 
 interface = CustomConsoleInterface()
 vis = Visualizer()

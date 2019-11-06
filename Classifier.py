@@ -63,8 +63,7 @@ class KMeansClassifier(Classifier):
             if col not in valid_columns:
                 self.train_distr.drop(col, 1)
                 self.test_distr.drop(col, 1)
-
-
+                
 
 class RegressionMethod(Classifier):
     def __init__(self, data, train_length):
@@ -79,6 +78,7 @@ class RegressionMethod(Classifier):
         actual_test_data = self.train_distr.drop('К0011', 1)
         return mean_absolute_error(self._get_test_true(), self.classifier.predict(actual_test_data)),\
                r2_score(self._get_test_true(), self.classifier.predict(actual_test_data))
+
 
     def _get_train_features(self):
         return self.train_distr['К0011'].values
