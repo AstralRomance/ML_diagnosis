@@ -12,7 +12,7 @@ sex_matrix - matrix for using as sex; -1 -1 for empty age cells
 
 class DataPreparer:
     def __init__(self, parsed_file):
-        self.age_group_matrix = ['<0', '0-17', '17-21', '21-55', '55-75', '75-90', '>90']
+        self.age_intervals = [(-1, 0), (0, 17), (17, 21), (21, 55), (55, 75), (75, 90), (90, 1000)]
         self.to_parse = parsed_file
         self.patient_id = None
         self.dataset_unmodified = None
@@ -82,13 +82,12 @@ class DataPreparer:
 
     def ages_change(self, ages_column=None):
         if ages_column:
-            self.dataset_no_useless['<0'] = [1 if i in list(range(-1, 0)) else 0 for i in self.dataset_no_useless[ages_column]]
-            self.dataset_no_useless['0-17'] = [1 if i in list(range(0, 17)) else 0 for i in self.dataset_no_useless[ages_column]]
-            self.dataset_no_useless['17-21'] = [1 if i in list(range(17, 21)) else 0 for i in self.dataset_no_useless[ages_column]]
-            self.dataset_no_useless['21-55'] = [1 if i in list(range(21, 55)) else 0 for i in self.dataset_no_useless[ages_column]]
-            self.dataset_no_useless['55-75'] = [1 if i in list(range(55, 75)) else 0 for i in self.dataset_no_useless[ages_column]]
-            self.dataset_no_useless['75-90'] = [1 if i in list(range(75, 90)) else 0 for i in self.dataset_no_useless[ages_column]]
-            self.dataset_no_useless['>90'] = [1 if i in list(range(90, 1000)) else 0 for i in self.dataset_no_useless[ages_column]]
+            for i in self.age_intervals:
+                for j in self.dataset_no_useless[ages_column]:
+                    if j in range(*i):
+                        self.dataset_no_useless[str(i)] = 1
+                    else:
+                        self.dataset_no_useless[str(i)] = 0
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
         else:
             print('Nothing to delete')
