@@ -45,7 +45,6 @@ class Visualizer:
         plt.savefig(f'graphs/normal_analysis/intervals with step {i}.png')
         plt.close(fig)
 
-
     def make_heatmap(self, data):
         sns.heatmap(data.corr(), annot=True)
         plt.show()
