@@ -44,6 +44,10 @@ class Classifier:
     def get_result_map(self):
         return self.res_map
 
+    @property
+    def get_test(self):
+        return self.test_distr
+
 
 class KMeansClassifier(Classifier):
     def __init__(self, data, train_length):
@@ -58,7 +62,6 @@ class KMeansClassifier(Classifier):
         return prediction
 
     def choose_clustering_columns(self, valid_columns):
-        #print(valid_columns)
         for col in self.train_distr:
             if col not in valid_columns:
                 self.train_distr.drop(col, 1)
