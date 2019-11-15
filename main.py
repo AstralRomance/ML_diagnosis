@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+
 import seaborn as sns
 from matplotlib import numpy as np
 
@@ -27,16 +28,16 @@ dp.dataset_to_numeric()
 vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
 
 if 'all' in interface.make_list([{'name': 'all'}, {'name': 'params'}], 'Choose clustering mode', 'clustering_mode').values():
+    kmeans = KMeansClassifier(dp.get_dataset_no_useless)
     for train_length in range(100, 700, 50):
-        for n_clusters in range(3, 6):
-            for max_iter in range(500, 4000, 200):
-                kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_length)
-                kmeans.train(n_clusters, max_iter)
-                try:
-                    vis.make_pairplot(kmeans.get_test, dp.get_ages, kmeans.predict(), (train_length, n_clusters))
-                except np.linalg.LinAlgError:
-                    print(f'LinAlg Error founded in: n_clusters {n_clusters}, max iter {max_iter}')
-                    continue
+        for max_iter in range(500, 2000, 200):
+            kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_length)
+            kmeans.train(3, max_iter)
+            kmeans.predict()
+    try:
+        vis.make_pairplot(kmeans.make_resulting_dataset(), dp.get_ages, 2000)
+    except np.linalg.LinAlgError:
+        print(f'LinAlg Error founded in: n_clusters {2000}')
 else:
     val_col = interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                       'choose valid columns', 'valid_columns').values()

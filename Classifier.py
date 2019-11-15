@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from sklearn. preprocessing import LabelEncoder
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
 
@@ -50,15 +50,17 @@ class Classifier:
 
 
 class KMeansClassifier(Classifier):
-    def __init__(self, data, train_length):
+    def __init__(self, data, train_length=100):
         super().__init__(data, train_length)
+        self.clusters = []
 
     def train(self, clusters=3, max_iter=300):
         self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter)
-        self.classifier.fit([i for i in self.train_distr.values])
+        self.classifier.fit(self.train_distr)
 
     def predict(self):
-        prediction = self.classifier.predict([i for i in self.test_distr.values])
+        prediction = self.classifier.predict(self.test_distr)
+        self.clusters = prediction
         return prediction
 
     def choose_clustering_columns(self, valid_columns):
@@ -66,6 +68,14 @@ class KMeansClassifier(Classifier):
             if col not in valid_columns:
                 self.train_distr.drop(col, 1)
                 self.test_distr.drop(col, 1)
+
+    def make_resulting_dataset(self):
+        cl = [f'cluster {i}' for i in self.clusters]
+        self.test_distr['clusters'] = cl
+        #temp = self.train_distr
+        #temp['clusters'] = cl
+        return self.test_distr
+
 
 
 # NON VALID CLASS

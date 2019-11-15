@@ -51,11 +51,12 @@ class Visualizer:
         sns.heatmap(data.corr(), annot=True)
         plt.show()
 
-    def make_pairplot(self, data, ages, clusters, name):
+    def make_pairplot(self, data, ages, name):
+        print(data)
         for age in ages:
             data = data.drop(str(age), 1)
-        data['clusters'] = clusters
-        fig = plt.figure()
-        sns.pairplot(data, hue='clusters', palette='husl')
-        plt.savefig(f'graphs/pairplots/pairplot_{name[0]}_{name[1]}.png')
-        plt.close(fig)
+        try:
+            g = sns.pairplot(data, hue='clusters')
+            plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
+        except Exception as e:
+            print(f'{e} dropped')
