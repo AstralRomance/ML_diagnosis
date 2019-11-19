@@ -21,9 +21,7 @@ class Analyzer:
         self.__probability_print(prob_per_cluster)
         self.probability_list.append(prob_per_cluster)
 
-
 #   Returns local extreme points
-
     def extreme_found(self, cluster_dict):
         extreme_max = {}
         extreme_min = {}

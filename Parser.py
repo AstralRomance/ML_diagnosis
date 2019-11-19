@@ -77,7 +77,7 @@ class DataPreparer:
                 self.dataset_no_useless = self.dataset_no_useless.drop(cols, 1)
             self.dataset_no_useless = self.dataset_no_useless.assign(BMI=temp)
         else:
-            print('Nothing to delete')
+            print('Nothing to replace')
             return 0
 
     def ages_change(self, ages_column=None):
@@ -90,7 +90,7 @@ class DataPreparer:
                         self.dataset_no_useless[str(i)] = 0
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
         else:
-            print('Nothing to delete')
+            print('Nothing to replace')
             return 0
 
 #   change source file
@@ -104,3 +104,7 @@ class DataPreparer:
     @property
     def get_dataset_unmodified(self):
         return self.dataset_unmodified
+
+    @property
+    def get_ages(self):
+        return self.age_intervals

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import LabelEncoder
 
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
@@ -44,27 +45,32 @@ class Classifier:
     def get_result_map(self):
         return self.res_map
 
+    @property
+    def get_test(self):
+        return self.test_distr
+
 
 class KMeansClassifier(Classifier):
     def __init__(self, data, train_length):
         super().__init__(data, train_length)
 
     def train(self, clusters=3, max_iter=300):
+        train_data = self.train_distr
         self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter)
-        self.classifier.fit([i for i in self.train_distr.values])
+        self.classifier.fit(train_data.values)
 
     def predict(self):
-        prediction = self.classifier.predict([i for i in self.test_distr.values])
+        prediction = self.classifier.predict(self.test_distr.values)
         return prediction
 
     def choose_clustering_columns(self, valid_columns):
-        #print(valid_columns)
         for col in self.train_distr:
             if col not in valid_columns:
                 self.train_distr.drop(col, 1)
                 self.test_distr.drop(col, 1)
-                
 
+
+# NON VALID CLASS
 class RegressionMethod(Classifier):
     def __init__(self, data, train_length):
         super().__init__(data, train_length)
@@ -78,7 +84,6 @@ class RegressionMethod(Classifier):
         actual_test_data = self.train_distr.drop('К0011', 1)
         return mean_absolute_error(self._get_test_true(), self.classifier.predict(actual_test_data)),\
                r2_score(self._get_test_true(), self.classifier.predict(actual_test_data))
-
 
     def _get_train_features(self):
         return self.train_distr['К0011'].values

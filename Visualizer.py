@@ -45,7 +45,22 @@ class Visualizer:
         plt.savefig(f'graphs/normal_analysis/intervals with step {i}.png')
         plt.close(fig)
 
-
-    def make_heatmap(self, data):
+    def make_heatmap(self, data, ages):
+        for age in ages:
+            data = data.drop(str(age), 1)
         sns.heatmap(data.corr(), annot=True)
+        plt.savefig(f'graphs/heatmap.png')
+        plt.show()
+
+    def make_pairplot(self, data, ages, clusters, name='new_pairplot'):
+        fig = plt.figure()
+        for age in ages:
+            data = data.drop(str(age), 1)
+        data['clusters'] = clusters
+        g = sns.pairplot(data, hue="clusters", vars=[i for i in data.drop('clusters', 1)])
+        plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
+        plt.close('all')
+
+    def make_cluster_hist(self, clusters):
+        plt.hist(clusters)
         plt.show()
