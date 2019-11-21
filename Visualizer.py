@@ -52,12 +52,12 @@ class Visualizer:
         plt.savefig(f'graphs/heatmap.png')
         plt.show()
 
-    def make_pairplot(self, data, ages, clusters, name='new_pairplot'):
+    def make_pairplot(self, data, ages, name='new_pairplot'):
         fig = plt.figure()
         for age in ages:
             data = data.drop(str(age), 1)
-        data['clusters'] = clusters
-        g = sns.pairplot(data, hue="clusters", vars=[i for i in data.drop('clusters', 1)])
+        print(data)
+        g = sns.pairplot(data)
         plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
         plt.close('all')
 

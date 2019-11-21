@@ -66,19 +66,21 @@ class DataPreparer:
 
     def replace_to_BMI(self, w_h_columns=None):
         if w_h_columns:
-            temp = []
-            for i, vals in enumerate(self.dataset_no_useless[w_h_columns[0]].values):
-                if float(self.dataset_no_useless[w_h_columns[1]][i]) == 0.0 or float(self.dataset_no_useless[w_h_columns[1]][i]) == -1.0:
-                    temp.append(0)
-                else:
-                    temp.append(float(self.dataset_no_useless[w_h_columns[0]][i]) /
-                                (float(self.dataset_no_useless[w_h_columns[1]][i]) / 100) ** 2)
+            weight_bmi = self.dataset_no_useless[w_h_columns[0]].copy()
+            height_bmi = self.dataset_no_useless[w_h_columns[1]].copy()
             for cols in w_h_columns:
                 self.dataset_no_useless = self.dataset_no_useless.drop(cols, 1)
-            self.dataset_no_useless = self.dataset_no_useless.assign(BMI=temp)
+            bmi = []
+            for count, val in enumerate(height_bmi):
+                if (height_bmi[count] == 0) or (weight_bmi[count] == 0):
+                    bmi.append(-1)
+                else:
+                    bmi.append(weight_bmi[count]/((height_bmi[count]/100)**2))
+            self.dataset_no_useless['BMI'] = bmi
+            self.dataset_no_useless = self.dataset_no_useless.drop(self.dataset_no_useless[self.dataset_no_useless.BMI > 300].index)
+
         else:
             print('Nothing to replace')
-            return 0
 
     def ages_change(self, ages_column=None):
         if ages_column:
@@ -91,7 +93,6 @@ class DataPreparer:
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
         else:
             print('Nothing to replace')
-            return 0
 
 #   change source file
     def change_parsed_file(self, file_path):

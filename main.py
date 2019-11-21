@@ -22,16 +22,20 @@ dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_
                                                'choose weight and height columns (following is important)',
                                                'BMI_replaceing').values())
 dp.dataset_to_numeric()
-
+print(dp.get_dataset_no_useless)
 vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
 
-if 'all' in interface.make_list([{'name': 'all'}, {'name': 'params'}], 'Choose clustering mode', 'clustering_mode').values():
+if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
+                                       'analysis_mode').values():
     kmeans = KMeansClassifier(dp.get_dataset_no_useless, 500)
-    for max_iter in range(500, 1800, 200):
-        kmeans.train(max_iter=max_iter)
-    for i in kmeans.predict():
-        vis.make_pairplot(kmeans.get_test, dp.get_ages, i, f'{i}_cluster')
-    vis.make_cluster_hist(kmeans.predict())
+    kmeans.train(max_iter=550)
+    kmeans.predict()
+    print('pairplot building')
+    print(kmeans.get_clustered[kmeans.get_clustered['clusters'] == 2])
+    #kmeans_correct = kmeans.get_clustered[kmeans.get_clustered['clusters'] == 0]
+    vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{3}_cluster')
+
+
 else:
     val_col = interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                       'choose valid columns', 'valid_columns').values()
