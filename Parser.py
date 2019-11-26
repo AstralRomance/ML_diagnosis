@@ -1,4 +1,6 @@
 import pandas as pd
+from sklearn import preprocessing
+from sklearn.utils import shuffle
 
 '''
 class take excel table and make csv dataset with formalized data 
@@ -78,7 +80,6 @@ class DataPreparer:
                     bmi.append(weight_bmi[count]/((height_bmi[count]/100)**2))
             self.dataset_no_useless['BMI'] = bmi
             self.dataset_no_useless = self.dataset_no_useless.drop(self.dataset_no_useless[self.dataset_no_useless.BMI > 300].index)
-
         else:
             print('Nothing to replace')
 
@@ -93,6 +94,22 @@ class DataPreparer:
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
         else:
             print('Nothing to replace')
+
+    def invalid_check(self, invalid_rows=None):
+        for col in invalid_rows:
+            self.dataset_no_useless[col].replace(0.0, -1, inplace=True)
+        for col in invalid_rows:
+            print(self.dataset_no_useless[col])
+        else:
+            print('Nothing to replace')
+
+    def make_class_labels(self, labels):
+        self.dataset_no_useless = shuffle(self.dataset_no_useless)
+        self.class_label = labels
+        le = preprocessing.LabelEncoder()
+        le.fit(self.dataset_no_useless[labels])
+        self.dataset_no_useless[labels] = le.transform(self.dataset_no_useless[labels])
+        return labels
 
 #   change source file
     def change_parsed_file(self, file_path):

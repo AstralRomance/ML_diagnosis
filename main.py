@@ -1,10 +1,7 @@
-import seaborn as sns
-from matplotlib import numpy as np
-
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
 from Downgrader import Downgrader
-from Classifier import KMeansClassifier
+from Classifier import KMeansClassifier, BayesClassifier
 from Visualizer import Visualizer
 
 interface = CustomConsoleInterface()
@@ -21,9 +18,13 @@ dp.ages_change(*interface.make_list([{'name': i} for i in dp.get_dataset_no_usel
 dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose weight and height columns (following is important)',
                                                'BMI_replaceing').values())
+dp.invalid_check(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+                                               'Choose places to invalid checking',
+                                               'Invalid check').values())
+
 dp.dataset_to_numeric()
 print(dp.get_dataset_no_useless)
-vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
+#vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
 
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
                                        'analysis_mode').values():
@@ -31,18 +32,19 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
     kmeans.train(max_iter=550)
     kmeans.predict()
     print('pairplot building')
-    print(kmeans.get_clustered[kmeans.get_clustered['clusters'] == 2])
-    #kmeans_correct = kmeans.get_clustered[kmeans.get_clustered['clusters'] == 0]
-    vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{3}_cluster')
-
-
+    for i in set(kmeans.get_clustered['clusters']):
+        try:
+            vis.make_pairplot(kmeans.get_clustered[kmeans.get_clustered['clusters'] == i], dp.get_ages, f'{3}_cluster')
+        except Exception as e:
+            print(f'{e} has been dropped')
+            continue
 else:
-    val_col = interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
-                                      'choose valid columns', 'valid_columns').values()
-    for train_length in range(100, 700, 50):
-        for n_clusters in range(3, 6):
-            for max_iter in range(500, 4000, 200):
-                kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_length)
-                kmeans.choose_clustering_columns(*val_col)
-                kmeans.train(n_clusters, max_iter)
-                vis.make_pairplot(kmeans.get_test, *dp.get_ages, kmeans.predict(), (train_length, n_clusters ))
+    train_score = []
+    test_score = []
+    class_label = dp.make_class_labels(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+                                                 'choose classes labels', 'class_labels').values())
+    for train_len in range(100, 1400, 100):
+        bayes = BayesClassifier(dp.get_dataset_no_useless, train_len, class_label)
+        train_score.append(bayes.train())
+        test_score.append(bayes.predict())
+    vis.make_overlearn_check_plot(train_score, test_score, range(100, 1400, 100))

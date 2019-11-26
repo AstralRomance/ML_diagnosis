@@ -53,13 +53,17 @@ class Visualizer:
         plt.show()
 
     def make_pairplot(self, data, ages, name='new_pairplot'):
-        fig = plt.figure()
         for age in ages:
             data = data.drop(str(age), 1)
-        print(data)
         g = sns.pairplot(data)
         plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
         plt.close('all')
+
+    def make_overlearn_check_plot(self, a, b, ranging):
+        plt.plot(ranging, a, label='train distr')
+        plt.plot(ranging, b, label='test distr')
+        plt.legend()
+        plt.show()
 
     def make_cluster_hist(self, clusters):
         plt.hist(clusters)

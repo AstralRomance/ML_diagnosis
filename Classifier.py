@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 
 import pandas as pd
+import numpy as np
 
 from sklearn.cluster import KMeans
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import LabelEncoder
+from sklearn.naive_bayes import GaussianNB
+
 
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
@@ -77,24 +78,23 @@ class KMeansClassifier(Classifier):
         return self.dataset_clustered_labels
 
 
-# NON VALID CLASS
-class RegressionMethod(Classifier):
-    def __init__(self, data, train_length):
+class BayesClassifier(Classifier):
+    def __init__(self, data, train_length, class_label):
         super().__init__(data, train_length)
+        self.prediction = None
+        self.class_label = class_label
 
     def train(self):
-        self.classifier = LinearRegression()
-        actual_train_data = self.train_distr.drop('К0011', 1)
-        self.classifier.fit(actual_train_data, self._get_train_features())
+        self.train_distr = self.train_distr.fillna(-1)
+        self.classifier = GaussianNB()
+        self.classifier.fit(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
+        return self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
 
     def predict(self):
-        actual_test_data = self.train_distr.drop('К0011', 1)
-        return mean_absolute_error(self._get_test_true(), self.classifier.predict(actual_test_data)),\
-               r2_score(self._get_test_true(), self.classifier.predict(actual_test_data))
+        self.test_distr = self.test_distr.fillna(-1)
+        self.prediction = self.classifier.predict(self.test_distr.drop(self.class_label, 1))
+        return self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label])
 
-    def _get_train_features(self):
-        return self.train_distr['К0011'].values
-
-    def _get_test_true(self):
-        return self.train_distr['К0011'].values
-
+    @property
+    def get_prediction(self):
+        return self.prediction
