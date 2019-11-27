@@ -1,19 +1,15 @@
-from matplotlib import pyplot as plt
-
-import seaborn as sns
-from matplotlib import numpy as np
-
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
 from Downgrader import Downgrader
-from Classifier import KMeansClassifier
+from Classifier import KMeansClassifier, BayesClassifier
 from Visualizer import Visualizer
 
 interface = CustomConsoleInterface()
 vis = Visualizer()
-dp = DataPreparer('dataset.xlsx')
+dp = DataPreparer('sources/dataset.xlsx')
 
 dp.parse()
+print(dp.get_dataset_no_useless)
 dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose useless', 'useless_columns').values())
 dp.gender_changes(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
@@ -23,28 +19,35 @@ dp.ages_change(*interface.make_list([{'name': i} for i in dp.get_dataset_no_usel
 dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose weight and height columns (following is important)',
                                                'BMI_replaceing').values())
+dp.invalid_check(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+                                               'Choose places to invalid checking',
+                                               'Invalid check').values())
+
 dp.dataset_to_numeric()
+print(dp.get_dataset_no_useless)
+#vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
 
-vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
-
-if 'all' in interface.make_list([{'name': 'all'}, {'name': 'params'}], 'Choose clustering mode', 'clustering_mode').values():
-    kmeans = KMeansClassifier(dp.get_dataset_no_useless)
-    for train_length in range(100, 700, 50):
-        for max_iter in range(500, 2000, 200):
-            kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_length)
-            kmeans.train(3, max_iter)
-            kmeans.predict()
-    try:
-        vis.make_pairplot(kmeans.make_resulting_dataset(), dp.get_ages, 2000)
-    except np.linalg.LinAlgError:
-        print(f'LinAlg Error founded in: n_clusters {2000}')
+if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
+                                       'analysis_mode').values():
+    kmeans = KMeansClassifier(dp.get_dataset_no_useless, 500)
+    kmeans.train(max_iter=550)
+    kmeans.predict()
+    print('pairplot building')
+    for i in set(kmeans.get_clustered['clusters']):
+        try:
+            vis.make_pairplot(kmeans.get_clustered[kmeans.get_clustered['clusters'] == i], dp.get_ages, f'{3}_cluster')
+        except Exception as e:
+            print(f'{e} has been dropped')
+            continue
 else:
-    val_col = interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
-                                      'choose valid columns', 'valid_columns').values()
-    for train_length in range(100, 700, 50):
-        for n_clusters in range(3, 6):
-            for max_iter in range(500, 4000, 200):
-                kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_length)
-                kmeans.choose_clustering_columns(*val_col)
-                kmeans.train(n_clusters, max_iter)
-                vis.make_pairplot(kmeans.get_test, *dp.get_ages, kmeans.predict(), (train_length, n_clusters ))
+    train_score = []
+    test_score = []
+    class_label = dp.make_class_labels(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+                                                 'choose classes labels', 'class_labels').values())
+    for train_len in range(100, 1400, 50):
+        bayes = BayesClassifier(dp.get_dataset_no_useless, train_len, class_label)
+        train_score.append(bayes.train())
+        test_score.append(bayes.predict())
+    print(train_score)
+    print(test_score)
+    vis.make_overlearn_check_plot(train_score, test_score, range(100, 1400, 50), 'bayes')

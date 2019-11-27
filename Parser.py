@@ -1,4 +1,8 @@
+import os
+
 import pandas as pd
+from sklearn import preprocessing
+from sklearn.utils import shuffle
 
 '''
 class take excel table and make csv dataset with formalized data 
@@ -22,10 +26,15 @@ class DataPreparer:
 #   dataset with only useful parameters with the next data formalizing
 #   return formed dataset
     def parse(self):
-        data_xls = pd.read_excel(self.to_parse, 'part1', index_col=0)
-        data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
+        if 'res_dataset.csv' in os.getcwd():
+            output_dataset = pd.read_csv('res_dataset.csv', sep=';')
+        else:
+            data_xls = pd.read_excel(self.to_parse, 'part1', index_col=0)
+            data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
+            output_dataset = pd.read_csv('res_dataset.csv', sep=';')
+            output_dataset = shuffle(output_dataset)
 
-        output_dataset = pd.read_csv('res_dataset.csv', sep=';')
+
         output_dataset = output_dataset.fillna(-1)
         self.dataset_unmodified = output_dataset
         self.dataset_no_useless = self.dataset_unmodified
@@ -66,19 +75,20 @@ class DataPreparer:
 
     def replace_to_BMI(self, w_h_columns=None):
         if w_h_columns:
-            temp = []
-            for i, vals in enumerate(self.dataset_no_useless[w_h_columns[0]].values):
-                if float(self.dataset_no_useless[w_h_columns[1]][i]) == 0.0 or float(self.dataset_no_useless[w_h_columns[1]][i]) == -1.0:
-                    temp.append(0)
-                else:
-                    temp.append(float(self.dataset_no_useless[w_h_columns[0]][i]) /
-                                (float(self.dataset_no_useless[w_h_columns[1]][i]) / 100) ** 2)
+            weight_bmi = self.dataset_no_useless[w_h_columns[0]].copy()
+            height_bmi = self.dataset_no_useless[w_h_columns[1]].copy()
             for cols in w_h_columns:
                 self.dataset_no_useless = self.dataset_no_useless.drop(cols, 1)
-            self.dataset_no_useless = self.dataset_no_useless.assign(BMI=temp)
+            bmi = []
+            for count, val in enumerate(height_bmi):
+                if (height_bmi[count] == 0) or (weight_bmi[count] == 0):
+                    bmi.append(-1)
+                else:
+                    bmi.append(weight_bmi[count]/((height_bmi[count]/100)**2))
+            self.dataset_no_useless['BMI'] = bmi
+            self.dataset_no_useless = self.dataset_no_useless.drop(self.dataset_no_useless[self.dataset_no_useless.BMI > 300].index)
         else:
-            print('Nothing to delete')
-            return 0
+            print('Nothing to replace')
 
     def ages_change(self, ages_column=None):
         if ages_column:
@@ -90,8 +100,22 @@ class DataPreparer:
                         self.dataset_no_useless[str(i)] = 0
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
         else:
-            print('Nothing to delete')
-            return 0
+            print('Nothing to replace')
+
+    def invalid_check(self, invalid_rows=None):
+        for col in invalid_rows:
+            self.dataset_no_useless[col].replace(0.0, -1, inplace=True)
+        for col in invalid_rows:
+            print(self.dataset_no_useless[col])
+        else:
+            print('Nothing to replace')
+
+    def make_class_labels(self, labels):
+        self.class_label = labels
+        le = preprocessing.LabelEncoder()
+        le.fit(self.dataset_no_useless[labels])
+        self.dataset_no_useless[labels] = le.transform(self.dataset_no_useless[labels])
+        return labels
 
 #   change source file
     def change_parsed_file(self, file_path):
@@ -104,3 +128,7 @@ class DataPreparer:
     @property
     def get_dataset_unmodified(self):
         return self.dataset_unmodified
+
+    @property
+    def get_ages(self):
+        return self.age_intervals

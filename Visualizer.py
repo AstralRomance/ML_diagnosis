@@ -49,14 +49,22 @@ class Visualizer:
         for age in ages:
             data = data.drop(str(age), 1)
         sns.heatmap(data.corr(), annot=True)
+        plt.savefig(f'graphs/heatmap.png')
         plt.show()
 
-    def make_pairplot(self, data, ages, name):
-        print(data)
+    def make_pairplot(self, data, ages, name='new_pairplot'):
         for age in ages:
             data = data.drop(str(age), 1)
-        try:
-            g = sns.pairplot(data, hue='clusters')
-            plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
-        except Exception as e:
-            print(f'{e} dropped')
+        g = sns.pairplot(data)
+        plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
+        plt.close('all')
+
+    def make_overlearn_check_plot(self, train_sc, test_sc, ranging, clname):
+        plt.plot(ranging, train_sc, label='train distr')
+        plt.plot(ranging, test_sc, label='test distr')
+        plt.legend()
+        plt.savefig(f'graphs/{clname}.png')
+
+    def make_cluster_hist(self, clusters):
+        plt.hist(clusters)
+        plt.show()
