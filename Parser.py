@@ -34,7 +34,6 @@ class DataPreparer:
             output_dataset = pd.read_csv('res_dataset.csv', sep=';')
             output_dataset = shuffle(output_dataset)
 
-
         output_dataset = output_dataset.fillna(-1)
         self.dataset_unmodified = output_dataset
         self.dataset_no_useless = self.dataset_unmodified
@@ -62,6 +61,7 @@ class DataPreparer:
     def dataset_to_numeric(self):
         for col in self.dataset_no_useless.columns:
             self.dataset_no_useless[col] = pd.to_numeric(self.dataset_no_useless[col], errors='ignore', downcast='float')
+        self.dataset_no_useless.fillna(-1)
 
     def gender_changes(self, gender_column):
         if gender_column:

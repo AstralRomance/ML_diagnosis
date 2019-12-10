@@ -5,8 +5,7 @@ import numpy as np
 
 from sklearn.cluster import KMeans
 from sklearn.naive_bayes import GaussianNB
-
-
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 
@@ -98,3 +97,25 @@ class BayesClassifier(Classifier):
     @property
     def get_prediction(self):
         return self.prediction
+
+    @property
+    def get_test_labels(self):
+        return self.test_distr[self.class_label]
+
+class Forest(Classifier):
+    def __init__(self, data, train_length, class_label):
+        data = data.fillna(-1)
+        super().__init__(data, train_length)
+        self.class_label = class_label
+
+    def train(self, max_depth=2, random_state=0):
+        self.classifier = RandomForestClassifier(max_depth=max_depth, random_state=random_state, n_estimators=101)
+        self.classifier.fit(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
+        return self.classifier.feature_importances_
+        #return self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
+        #return {self.train_distr.keys():self.classifier.feature_importances_}
+
+    def predict(self):
+        pred = self.classifier.predict([self.test_distr[self.class_label]])
+        print(self.classifier.score(pred, self.test_distr[self.class_label]))
+        return self.classifier.score(pred, self.test_distr[self.class_label])

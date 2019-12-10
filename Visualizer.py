@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
+from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
 '''
@@ -9,7 +10,6 @@ Class for make plots
 
 class Visualizer:
 #   Make plot in euclidean space
-
     def make_euclidean_space_plot(self, estimator_name, data, param, predicted=None, centers=None):
         fig = plt.figure()
         plt.scatter(data[:, 0], data[:, 1], c=predicted, s=50, cmap='viridis')
@@ -55,7 +55,7 @@ class Visualizer:
     def make_pairplot(self, data, ages, name='new_pairplot'):
         for age in ages:
             data = data.drop(str(age), 1)
-        g = sns.pairplot(data)
+        g = sns.pairplot(data, hue='clusters', diag_kind='hist')
         plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
         plt.close('all')
 
@@ -64,7 +64,17 @@ class Visualizer:
         plt.plot(ranging, test_sc, label='test distr')
         plt.legend()
         plt.savefig(f'graphs/{clname}.png')
+        plt.close('all')
 
     def make_cluster_hist(self, clusters):
         plt.hist(clusters)
         plt.show()
+
+    def make_confusion_matrix(self, true_labels, predicted_labels, train_l):
+        fig = plt.figure(figsize=(9, 12))
+        confusion = confusion_matrix(true_labels, predicted_labels)
+        sns.heatmap(confusion, annot=True, square=True)
+        plt.savefig(f'graphs/classification_heatmap/heatmap_{train_l}.png', bbox_inches='tight')
+        with open(f'heatmaps/heatmap{train_l}.txt', 'w') as hmp:
+            hmp.write(str(confusion))
+        plt.close(fig)

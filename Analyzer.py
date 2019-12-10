@@ -5,21 +5,20 @@ from scipy import stats
 Class for distribution analysis
 '''
 
-
 class Analyzer:
-    def __init__(self, input_data):
+    def __init__(self, input_data=None):
         self.avg_cluster_probability = []
-        self.probability_list = []
-        self.input_data = input_data['К0011'].values
-        self.input_data.sort()
-        print(self.input_data)
+        if not input_data:
+            self.input_data = None
+        else:
+            self.input_data.sort()
+            print(self.input_data)
 
 #   Probability calculating per clusters
-    def probability_per_cluster(self, point_dict):
-        total_points = sum(map(len, point_dict.values()))
-        prob_per_cluster = [(len(point_dict.get(i))/total_points)*100 for i in point_dict.keys()]
-        self.__probability_print(prob_per_cluster)
-        self.probability_list.append(prob_per_cluster)
+    def probability_per_cluster(self, cluster_len, total_len, cluster_label):
+        prob_per_cluster = (cluster_len/total_len)*100
+        self.__probability_print(cluster_label, prob_per_cluster)
+        return prob_per_cluster
 
 #   Returns local extreme points
     def extreme_found(self, cluster_dict):
@@ -54,18 +53,6 @@ class Analyzer:
     def normal_check(self, dataset):
         return stats.shapiro(dataset), stats.normaltest(dataset)
 
-    @property
-    def get_total_probability(self):
-        return self.probability_list
-
 #   Closed method to print probability per cluster
-
-    def __probability_print(self, probs):
-        cnt = 0
-        with open('probs.txt', 'a') as prob_f:
-            for i in probs:
-                print(f'Probability for cluster {cnt} is {i}%')
-                prob_f.write(f'Probability for cluster {cnt} is {i}%  \n')
-                cnt += 1
-            print('')
-            prob_f.write('\n\n')
+    def __probability_print(self, label,  prob):
+        print(f'Probability in {label} cluster = {prob}')
