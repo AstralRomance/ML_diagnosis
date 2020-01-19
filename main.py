@@ -3,7 +3,6 @@ import pandas as pd
 
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
-from Downgrader import Downgrader
 from Analyzer import Analyzer
 from Classifier import KMeansClassifier, BayesClassifier, Forest
 from Visualizer import Visualizer
@@ -30,19 +29,24 @@ dp.invalid_check(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_n
 dp.dataset_to_numeric()
 print(dp.get_dataset_no_useless.columns)
 #vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
+pairplot_flag = False
 
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
                                        'analysis_mode').values():
-    kmeans = KMeansClassifier(dp.get_dataset_no_useless, 500)
-    for i in range(500, 5000, 150):
-        kmeans.train(max_iter=1500)
-        kmeans.predict()
-        try:
-            vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{i}_cluster')
-        except Exception as e:
-            print(f'{e} has been dropped')
-        for j in set(kmeans.get_clustered['clusters']):
-            analyzer.probability_per_cluster(len(kmeans.get_clustered[kmeans.get_clustered['clusters'] == j]), len(kmeans.get_test), j)
+    metric_collection = []
+    for train_l in range(200, 1701, 100):
+        kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_l)
+        for n_clusters in range(3, 21):
+            for m_iter in range(500, 1500, 200):
+                kmeans.train(clusters=n_clusters, max_iter=m_iter)
+                kmeans.predict()
+                metric_collection.append(kmeans.metrics)
+            if pairplot_flag:
+                try:
+                    vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters')
+                except Exception as e:
+                    print(f'{e} has been dropped')
+    analyzer.metric_collection('KMeans', metric_collection)
 else:
     train_score = []
     test_score = []

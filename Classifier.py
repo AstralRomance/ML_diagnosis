@@ -1,14 +1,12 @@
 from abc import ABC, abstractmethod
 
-import pandas as pd
-import numpy as np
-
 from sklearn.cluster import KMeans
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import r2_score
 
+from sklearn.metrics import silhouette_score
+from sklearn.metrics import calinski_harabasz_score
+from sklearn.metrics import davies_bouldin_score
 
 '''
 Classifier parent class
@@ -18,7 +16,7 @@ class Classifier:
     def __init__(self, data, train_length):
         self.classifier = None
         self.res_map = None
-        self.classifier_data = data
+        self.classifier_data = data.fillna(-1)
         self.train_distr = self.make_train_distr(train_length)
         self.test_distr = self.make_test_distr(train_length)
 
@@ -30,8 +28,9 @@ class Classifier:
     def predict(self):
         raise NotImplementedError
 
-    def estimator_type(self, estimator):
-        return str(type(estimator)).split('.')[-1][0:-2]
+    @abstractmethod
+    def metric_collection(self):
+        raise NotImplementedError
 
     def make_train_distr(self, train_length):
         return self.classifier_data[0:train_length]
@@ -40,12 +39,12 @@ class Classifier:
         return self.classifier_data[train_length::]
 
     @property
-    def downgraded_dataset(self):
-        return self.classifier_data
+    def estimator_type(self):
+        return str(type(self.classifier)).split('.')[-1][0:-2]
 
     @property
-    def get_result_map(self):
-        return self.res_map
+    def downgraded_dataset(self):
+        return self.classifier_data
 
     @property
     def get_test(self):
@@ -56,6 +55,7 @@ class KMeansClassifier(Classifier):
     def __init__(self, data, train_length):
         super().__init__(data, train_length)
         self.dataset_clustered_labels = None
+        self.Metrics = None
 
     def train(self, clusters=3, max_iter=300):
         self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter)
@@ -66,15 +66,37 @@ class KMeansClassifier(Classifier):
         self.dataset_clustered_labels = self.test_distr.copy()
         self.dataset_clustered_labels['clusters'] = prediction
 
-    def choose_clustering_columns(self, valid_columns):
-        for col in self.train_distr:
-            if col not in valid_columns:
-                self.train_distr.drop(col, 1)
-                self.test_distr.drop(col, 1)
+    def metric_collection(self):
+        self.Metrics = (self._kmeans_silhouette(), self._calinski(), self._d_b_score())
+
+    def _kmeans_silhouette(self):
+        try:
+            return silhouette_score(self.test_distr, self.dataset_clustered_labels['clusters'])
+        except ValueError as val_err:
+            print(f'found {val_err} in {len(self.train_distr)} and {len(self.train_distr)}')
+            return -10
+
+    def _calinski(self):
+        try:
+            return calinski_harabasz_score(self.test_distr, self.dataset_clustered_labels['clusters'])
+        except ValueError as val_err:
+            print(f'found {val_err} in {len(self.train_distr)} and {len(self.train_distr)}')
+            return -10
+
+    def _d_b_score(self):
+        try:
+            return davies_bouldin_score(self.test_distr, self.dataset_clustered_labels['clusters'])
+        except ValueError as val_err:
+            print(f'found {val_err} in {len(self.train_distr)} and {len(self.train_distr)}')
+            return -10
 
     @property
     def get_clustered(self):
         return self.dataset_clustered_labels
+
+    @property
+    def metrics(self):
+        return len(self.train_distr), len(self.test_distr), self._kmeans_silhouette(), self._calinski(), self._d_b_score()
 
 
 class BayesClassifier(Classifier):
