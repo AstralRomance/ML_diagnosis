@@ -34,7 +34,7 @@ pairplot_flag = False
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
                                        'analysis_mode').values():
     metric_collection = []
-    for train_l in range(200, 1701, 100):
+    for train_l in range(100, 300, 50):
         kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_l)
         for n_clusters in range(3, 21):
             for m_iter in range(500, 1500, 200):
@@ -47,6 +47,7 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
                 except Exception as e:
                     print(f'{e} has been dropped')
     analyzer.metric_collection('KMeans', metric_collection)
+    analyzer.best_clustering_find()
 else:
     train_score = []
     test_score = []

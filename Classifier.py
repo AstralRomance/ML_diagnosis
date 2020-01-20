@@ -55,7 +55,6 @@ class KMeansClassifier(Classifier):
     def __init__(self, data, train_length):
         super().__init__(data, train_length)
         self.dataset_clustered_labels = None
-        self.Metrics = None
 
     def train(self, clusters=3, max_iter=300):
         self.classifier = KMeans(n_clusters=clusters, max_iter=max_iter)

@@ -33,6 +33,22 @@ class Analyzer:
         if estimator_name == 'KMeans':
             self.metric_dataset = pd.DataFrame(metric_set, columns=['train dataset length', 'test dataset length',
                                                                      'silhouette metric', 'calinski metric', 'david bolduin metric'])
+            self.metric_dataset.to_csv('metrics/kmeans_clustering.csv')
+
+    def best_clustering_find(self):
+        best_metrics = list(
+                                zip(
+                                    ('silhouette metric', 'calinski metric', 'david bolduin metric'),
+
+                                    (max(self.metric_dataset['silhouette metric']), max(self.metric_dataset['calinski metric']),
+                                        min(self.metric_dataset['david bolduin metric']))
+                                    )
+                            )
+        for k, v in best_metrics:
+            print(self.metric_dataset[self.metric_dataset[k] == v])
+
+
+
 
 #   Closed method to print probability per cluster
     def __probability_print(self, label,  prob):
