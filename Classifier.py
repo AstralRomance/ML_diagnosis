@@ -65,9 +65,6 @@ class KMeansClassifier(Classifier):
         self.dataset_clustered_labels = self.test_distr.copy()
         self.dataset_clustered_labels['clusters'] = prediction
 
-    def metric_collection(self):
-        self.Metrics = (self._kmeans_silhouette(), self._calinski(), self._d_b_score())
-
     def _kmeans_silhouette(self):
         try:
             return silhouette_score(self.test_distr, self.dataset_clustered_labels['clusters'])

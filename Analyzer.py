@@ -1,21 +1,13 @@
 from scipy import stats
 import pandas as pd
 
-
 '''
 Class for distribution analysis
 '''
 
 class Analyzer:
     def __init__(self, input_data=None):
-        self.avg_cluster_probability = []
         self.metric_dataset = None
-
-#   Probability calculating per clusters
-    def probability_per_cluster(self, cluster_len, total_len, cluster_label):
-        prob_per_cluster = (cluster_len/total_len)*100
-        self.__probability_print(cluster_label, prob_per_cluster)
-        return prob_per_cluster
 
     def normal_check(self, dataset):
         return stats.shapiro(dataset), stats.normaltest(dataset)
@@ -26,11 +18,13 @@ class Analyzer:
                                                                      'silhouette metric', 'calinski metric', 'david bolduin metric'])
             self.metric_dataset.to_csv(f'metrics/kmeans_clustering.csv')
 
+    def get_clusters(self):
+        pass
+
     def best_clustering_find(self):
         best_metrics = list(
                                 zip(
                                     ('silhouette metric', 'calinski metric', 'david bolduin metric'),
-
                                     (max(self.metric_dataset['silhouette metric']), max(self.metric_dataset['calinski metric']),
                                         min(self.metric_dataset['david bolduin metric']))
                                     )
@@ -42,6 +36,9 @@ class Analyzer:
         return self.metric_dataset
 
     #   Closed method to print probability per cluster
-    def __probability_print(self, label,  prob):
+    def _probability_print(self, label,  prob):
         print(f'Probability in {label} cluster = {prob}')
+
+    def _get_number_of_clusters(self, dataset):
+        return list(set(dataset['clusters']))
 
