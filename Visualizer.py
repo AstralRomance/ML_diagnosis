@@ -53,9 +53,11 @@ class Visualizer:
         plt.show()
 
     def make_pairplot(self, data, ages, name='new_pairplot'):
-        for age in ages:
-            data = data.drop(str(age), 1)
-        g = sns.pairplot(data, hue='clusters', diag_kind='hist')
+
+        if ages[0] in data.columns:
+            for age in ages:
+                data = data.drop(str(age), 1)
+        sns.pairplot(data, hue='clusters', diag_kind='hist')
         plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
         plt.close('all')
 

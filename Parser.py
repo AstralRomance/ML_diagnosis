@@ -29,7 +29,7 @@ class DataPreparer:
         if 'res_dataset.csv' in os.getcwd():
             output_dataset = pd.read_csv('res_dataset.csv', sep=';')
         else:
-            data_xls = pd.read_excel(self.to_parse, 'part1', index_col=0)
+            data_xls = pd.read_excel(self.to_parse, index_col=0)
             data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
             output_dataset = pd.read_csv('res_dataset.csv', sep=';')
             output_dataset = shuffle(output_dataset)
@@ -37,6 +37,7 @@ class DataPreparer:
         output_dataset = output_dataset.fillna(-1)
         self.dataset_unmodified = output_dataset
         self.dataset_no_useless = self.dataset_unmodified
+        print(self.dataset_no_useless.replace({'N':None}))
 
     def remove_useless(self, useless_fields=None):
         if useless_fields:
@@ -58,9 +59,9 @@ class DataPreparer:
             print('Nothing to delete')
             return 0
 
-    def dataset_to_numeric(self):
+    def dataset_to_numeric(self, numeric_mode):
         for col in self.dataset_no_useless.columns:
-            self.dataset_no_useless[col] = pd.to_numeric(self.dataset_no_useless[col], errors='ignore', downcast='float')
+            self.dataset_no_useless[col] = pd.to_numeric(self.dataset_no_useless[col], errors=numeric_mode, downcast='float')
         self.dataset_no_useless.fillna(-1)
 
     def gender_changes(self, gender_column):

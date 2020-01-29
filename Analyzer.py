@@ -17,23 +17,14 @@ class Analyzer:
         self.__probability_print(cluster_label, prob_per_cluster)
         return prob_per_cluster
 
-#   Returns local extreme points
-    def extreme_found(self, cluster_dict):
-        extreme_max = {}
-        extreme_min = {}
-        for cluster in cluster_dict:
-            extreme_max[cluster] = max(cluster_dict.get(cluster))
-            extreme_min[cluster] = min(cluster_dict.get(cluster))
-        return (extreme_max, extreme_min)
-
     def normal_check(self, dataset):
         return stats.shapiro(dataset), stats.normaltest(dataset)
 
     def metric_collection(self, estimator_name, metric_set):
         if estimator_name == 'KMeans':
-            self.metric_dataset = pd.DataFrame(metric_set, columns=['train dataset length', 'test dataset length',
+            self.metric_dataset = pd.DataFrame(metric_set, columns=['number of clusters', 'train dataset length', 'test dataset length',
                                                                      'silhouette metric', 'calinski metric', 'david bolduin metric'])
-            self.metric_dataset.to_csv('metrics/kmeans_clustering.csv')
+            self.metric_dataset.to_csv(f'metrics/kmeans_clustering.csv')
 
     def best_clustering_find(self):
         best_metrics = list(
@@ -44,12 +35,13 @@ class Analyzer:
                                         min(self.metric_dataset['david bolduin metric']))
                                     )
                             )
-        for k, v in best_metrics:
-            print(self.metric_dataset[self.metric_dataset[k] == v])
+        for ind, metric in best_metrics:
+            print(self.metric_dataset[self.metric_dataset[ind] == metric])
 
+    def get_metric_dataset(self):
+        return self.metric_dataset
 
-
-
-#   Closed method to print probability per cluster
+    #   Closed method to print probability per cluster
     def __probability_print(self, label,  prob):
         print(f'Probability in {label} cluster = {prob}')
+

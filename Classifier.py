@@ -95,7 +95,7 @@ class KMeansClassifier(Classifier):
 
     @property
     def metrics(self):
-        return len(self.train_distr), len(self.test_distr), self._kmeans_silhouette(), self._calinski(), self._d_b_score()
+        return len(set(self.classifier.labels_)), len(self.train_distr), len(self.test_distr), self._kmeans_silhouette(), self._calinski(), self._d_b_score()
 
 
 class BayesClassifier(Classifier):
