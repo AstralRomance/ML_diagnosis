@@ -36,25 +36,41 @@ Use coerce for ONLY numeric or already encoded data
 dp.dataset_to_numeric('coerce')
 #vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
 pairplot_flag = True
-
+test_flag = False
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
                                        'analysis_mode').values():
-    print(dp.get_dataset_no_useless)
+    if test_flag:
+        print(dp.get_dataset_no_useless)
+        metric_collection = []
+        for train_l in range(3000, 10000, 250):
+            kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_l)
+            for n_clusters in range(3, 30):
+                for m_iter in range(500, 1500, 200):
+                    kmeans.train(clusters=n_clusters, max_iter=m_iter)
+                    kmeans.predict()
+                    metric_collection.append(kmeans.metrics)
+                    if pairplot_flag:
+                        try:
+                            vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters_{m_iter}_learning_rate')
+                        except Exception as e:
+                            print(f'{e} has been dropped')
+        analyzer.metric_collection('KMeans', metric_collection)
+        analyzer.best_clustering_find()
+        test_flag = False
+
     metric_collection = []
-    for train_l in range(3000, 10000, 250):
-        kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_l)
-        for n_clusters in range(3, 30):
-            for m_iter in range(500, 1500, 200):
-                kmeans.train(clusters=n_clusters, max_iter=m_iter)
-                kmeans.predict()
-                metric_collection.append(kmeans.metrics)
-                if pairplot_flag:
-                    try:
-                        vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters_{m_iter}_learning_rate')
-                    except Exception as e:
-                        print(f'{e} has been dropped')
-    analyzer.metric_collection('KMeans', metric_collection)
-    analyzer.best_clustering_find()
+    kmeans_best = KMeansClassifier(dp.dataset_no_useless, 8750)
+    kmeans_best.train(5, 800)
+    kmeans_best.predict()
+    analyzer.separate_clusters(kmeans_best.get_clustered)
+    normal_check_result = [i for i in analyzer.normal_check()]
+    print(normal_check_result)
+    forest_features = []
+    for train_l in range(kmeans_best.data_length * 0.3, kmeans_best.data_length*0.8, 100):
+        forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
+        forest_features.append(forest.get_feature_importances)
+    analyzer.make_features_rate()
+
 else:
     train_score = []
     test_score = []
@@ -65,7 +81,7 @@ else:
         t = []
         for train_len in range(100, 1400, 50):
             forest = Forest(dp.get_dataset_no_useless, train_len, class_label)
-            t.append(forest.train())
+            t.append(forest.get_feature_importances)
         res_df = pd.DataFrame(t, columns=[i for i in dp.dataset_no_useless.drop(class_label, 1).keys()])
         print(res_df)
     else:

@@ -50,6 +50,10 @@ class Classifier:
     def get_test(self):
         return self.test_distr
 
+    @property
+    def data_length(self):
+        return len(self.classifier_data)
+
 
 class KMeansClassifier(Classifier):
     def __init__(self, data, train_length):
@@ -87,6 +91,14 @@ class KMeansClassifier(Classifier):
             return -10
 
     @property
+    def get_labels(self):
+        return self.dataset_clustered_labels['clusters']
+
+    @property
+    def get_data(self):
+        return self.dataset_clustered_labels.drop('clusters', 1)
+
+    @property
     def get_clustered(self):
         return self.dataset_clustered_labels
 
@@ -116,12 +128,8 @@ class BayesClassifier(Classifier):
     def get_prediction(self):
         return self.prediction
 
-    @property
-    def get_test_labels(self):
-        return self.test_distr[self.class_label]
-
 class Forest(Classifier):
-    def __init__(self, data, train_length, class_label):
+    def __init__(self, data, class_label, train_length):
         data = data.fillna(-1)
         super().__init__(data, train_length)
         self.class_label = class_label
@@ -129,7 +137,6 @@ class Forest(Classifier):
     def train(self, max_depth=2, random_state=0):
         self.classifier = RandomForestClassifier(max_depth=max_depth, random_state=random_state, n_estimators=101)
         self.classifier.fit(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
-        return self.classifier.feature_importances_
         #return self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
         #return {self.train_distr.keys():self.classifier.feature_importances_}
 
@@ -137,3 +144,7 @@ class Forest(Classifier):
         pred = self.classifier.predict([self.test_distr[self.class_label]])
         print(self.classifier.score(pred, self.test_distr[self.class_label]))
         return self.classifier.score(pred, self.test_distr[self.class_label])
+
+    @property
+    def get_feature_importances(self):
+        return self.classifier.feature_importances_

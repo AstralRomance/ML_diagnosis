@@ -71,7 +71,7 @@ class DataPreparer:
                 {'Мужской': 0, 'Женский': 1}
             )
         else:
-            print('Nothing to delete')
+            print('Nothing to replace')
             return 0
 
     def replace_to_BMI(self, w_h_columns=None):
