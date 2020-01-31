@@ -68,8 +68,7 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
     forest_features = []
     for train_l in range(kmeans_best.data_length * 0.3, kmeans_best.data_length*0.8, 100):
         forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
-        forest_features.append(forest.get_feature_importances)
-    analyzer.make_features_rate()
+        analyzer.make_features_rate(forest.get_feature_importances, kmeans_best.get_data.columns, train_l)
 
 else:
     train_score = []
