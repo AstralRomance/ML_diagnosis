@@ -42,7 +42,9 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
     if test_flag:
         print(dp.get_dataset_no_useless)
         metric_collection = []
-        for train_l in range(3000, 10000, 250):
+        for train_l in range(int(len(dp.get_dataset_no_useless)*0.3),
+                             int(len(dp.get_dataset_no_useless)*0.8),
+                             int(len(dp.get_dataset_no_useless)*0.05)):
             kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_l)
             for n_clusters in range(3, 30):
                 for m_iter in range(500, 1500, 200):
@@ -56,44 +58,25 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
                             print(f'{e} has been dropped')
         analyzer.metric_collection('KMeans', metric_collection)
         analyzer.best_clustering_find()
-        test_flag = False
-
-    metric_collection = []
-    kmeans_best = KMeansClassifier(dp.dataset_no_useless, 8750)
-    kmeans_best.train(5, 800)
-    kmeans_best.predict()
-    analyzer.separate_clusters(kmeans_best.get_clustered)
-    forest_features = []
-    print(kmeans_best.get_clustered)
-    for train_l in range(int(kmeans_best.data_length * 0.3), int(kmeans_best.data_length * 0.7), 100):
-        print(train_l)
-        print(len(kmeans_best.get_clustered))
-        forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
-        forest.train()
-        forest.predict()
-        analyzer.make_features_rate(forest.get_feature_importances, kmeans_best.get_data.columns, train_l)
-
-else:
-    train_score = []
-    test_score = []
-    class_label = dp.make_class_labels(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
-                                                 'choose classes labels', 'class_labels').values())
-    if 'Random Forest' in interface.make_list([{'name': 'Bayes'}, {'name': 'Random Forest'}], 'Choose classifier',
-                                              'classifier').values():
-        t = []
-        for train_len in range(100, 1400, 50):
-            forest = Forest(dp.get_dataset_no_useless, train_len, class_label)
-            t.append(forest.get_feature_importances)
-        res_df = pd.DataFrame(t, columns=[i for i in dp.dataset_no_useless.drop(class_label, 1).keys()])
-        print(res_df)
     else:
-        for train_len in range(100, 1401, 50):
-            bayes = BayesClassifier(dp.get_dataset_no_useless, train_len, class_label)
-            train_score.append(bayes.train())
-            test_score.append(bayes.predict())
-            print('confusion matrix')
-            vis.make_confusion_matrix(bayes.get_test_labels, bayes.get_prediction, train_len)
-        print(train_score)
-        print(test_score)
-        vis.make_overlearn_check_plot(train_score, test_score, range(100, 1401, 50), 'bayes')
-
+        for it in range(0, 8):
+            kmeans_best = KMeansClassifier(dp.dataset_no_useless, 8750)
+            kmeans_best.train(5, 800)
+            kmeans_best.predict()
+            analyzer.separate_clusters(kmeans_best.get_clustered)
+            forest_test_scores = []
+            forest_train_scores = []
+            train_l_list = [i for i in range(int(len(kmeans_best.get_clustered) * 0.2),
+                                             int(len(kmeans_best.get_clustered) * 0.8), 100)]
+            for train_l in train_l_list:
+                forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
+                forest.train()
+                forest.predict()
+                analyzer.make_features_rate(forest.get_feature_importances, kmeans_best.get_data.columns, train_l)
+                forest_test_scores.append(forest.collect_test_score())
+                forest_train_scores.append(forest.collect_train_score())
+            analyzer.probability_per_cluster(kmeans_best.get_test)
+            analyzer.normal_check()
+            vis.make_overlearn_check_plot(forest_train_scores, forest_test_scores, train_l_list,
+                                          f'forest_test/random_forest_for_best_clustering{it}')
+            del kmeans_best

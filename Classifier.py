@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 
 from sklearn.cluster import KMeans
@@ -139,12 +140,23 @@ class Forest(Classifier):
         self.classifier.fit(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
 
     def predict(self):
-        #print(self.test_distr.drop(self.class_label, 1))
         pred = self.classifier.predict(self.test_distr.drop(self.class_label, 1))
+        return pred
 
-    def collect_score(self, cross_val, train_length):
-        with open(f'random_forest_train/forest_score_{train_length}.txt', 'w') as forest_score:
-            forest_score.write(str(cross_val))
+    def collect_test_score(self):
+        self.score_write(
+            self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label]),
+            'test', len(self.train_distr))
+        return self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label])
+
+    def collect_train_score(self):
+        self.score_write(self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label]),
+                         'train', len(self.train_distr))
+        return self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
+
+    def score_write(self, score, distr, train_len):
+        with open(f'metrics/random_forest_{distr}/forest_score_{train_len}.txt', 'w') as outp:
+            outp.write(str(round(score, 5)))
 
     @property
     def get_feature_importances(self):

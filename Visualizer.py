@@ -22,14 +22,6 @@ class Visualizer:
             fig.savefig(f'graphs/{estimator_name}/{param}')
             plt.close(fig)
 
-#   Plot for probability change visualising
-    def make_probability_plot(self, probability):
-        plt.plot([i for i in probability[0]])
-        plt.plot([i for i in probability[1]])
-        plt.plot([i for i in probability[2]])
-        plt.plot([i for i in probability[3]])
-        plt.savefig('prob_change.png')
-
     def make_compare_plot(self, points_x, points_y, name):
         fig = plt.figure()
         number_of_graphics = max(list(map(len, [i for i in points_y])))
@@ -53,7 +45,6 @@ class Visualizer:
         plt.show()
 
     def make_pairplot(self, data, ages, name='new_pairplot'):
-
         if ages[0] in data.columns:
             for age in ages:
                 data = data.drop(str(age), 1)
