@@ -63,11 +63,14 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
     kmeans_best.train(5, 800)
     kmeans_best.predict()
     analyzer.separate_clusters(kmeans_best.get_clustered)
-    normal_check_result = [i for i in analyzer.normal_check()]
-    print(normal_check_result)
     forest_features = []
-    for train_l in range(kmeans_best.data_length * 0.3, kmeans_best.data_length*0.8, 100):
+    print(kmeans_best.get_clustered)
+    for train_l in range(int(kmeans_best.data_length * 0.3), int(kmeans_best.data_length * 0.7), 100):
+        print(train_l)
+        print(len(kmeans_best.get_clustered))
         forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
+        forest.train()
+        forest.predict()
         analyzer.make_features_rate(forest.get_feature_importances, kmeans_best.get_data.columns, train_l)
 
 else:

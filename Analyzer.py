@@ -49,7 +49,7 @@ class Analyzer:
     def make_features_rate(self, forest_features, cols, train_l):
         features = pd.DataFrame({'feature': cols, 'importance': forest_features}).sort_values(
             'importance', ascending=False)
-        features.to_csv(f'predictors_weights_train_l_{train_l}.csv')
+        features.to_csv(f'random_forest_weights/predictors_weights_train_l_{train_l}.csv')
 
     def get_metric_dataset(self):
         return self.metric_dataset

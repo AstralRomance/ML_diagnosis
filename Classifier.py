@@ -139,9 +139,12 @@ class Forest(Classifier):
         self.classifier.fit(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
 
     def predict(self):
-        pred = self.classifier.predict([self.test_distr[self.class_label]])
-        print(self.classifier.score(pred, self.test_distr[self.class_label]))
-        return self.classifier.score(pred, self.test_distr[self.class_label])
+        #print(self.test_distr.drop(self.class_label, 1))
+        pred = self.classifier.predict(self.test_distr.drop(self.class_label, 1))
+
+    def collect_score(self, cross_val, train_length):
+        with open(f'random_forest_train/forest_score_{train_length}.txt', 'w') as forest_score:
+            forest_score.write(str(cross_val))
 
     @property
     def get_feature_importances(self):
