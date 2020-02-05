@@ -1,50 +1,82 @@
+from matplotlib import pyplot as plt
+import pandas as pd
+
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
-from Downgrader import Downgrader
-from Classifier import KMeansClassifier, BayesClassifier
+from Analyzer import Analyzer
+from Classifier import KMeansClassifier, BayesClassifier, Forest
 from Visualizer import Visualizer
 
 interface = CustomConsoleInterface()
 vis = Visualizer()
-dp = DataPreparer('dataset.xlsx')
-
+dp = DataPreparer('sources/dataset.xlsx')
+analyzer = Analyzer()
 dp.parse()
+print(dp.get_dataset_no_useless)
+
+additional_info = False
+
 dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose useless', 'useless_columns').values())
-dp.gender_changes(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+if additional_info:
+    dp.gender_changes(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                            'choose gender column', 'gender_column').values())
-dp.ages_change(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+    dp.ages_change(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                         'choose age column', 'age_column').values())
-dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+    dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose weight and height columns (following is important)',
                                                'BMI_replaceing').values())
 dp.invalid_check(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'Choose places to invalid checking',
                                                'Invalid check').values())
-
-dp.dataset_to_numeric()
-print(dp.get_dataset_no_useless)
+'''
+Temporary numeric mode. Make menu for choice later. Coerce for another strange dataset
+Use coerce for ONLY numeric or already encoded data
+'''
+dp.dataset_to_numeric('coerce')
 #vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
-
+pairplot_flag = True
+test_flag = False
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
                                        'analysis_mode').values():
-    kmeans = KMeansClassifier(dp.get_dataset_no_useless, 500)
-    kmeans.train(max_iter=550)
-    kmeans.predict()
-    print('pairplot building')
-    for i in set(kmeans.get_clustered['clusters']):
-        try:
-            vis.make_pairplot(kmeans.get_clustered[kmeans.get_clustered['clusters'] == i], dp.get_ages, f'{3}_cluster')
-        except Exception as e:
-            print(f'{e} has been dropped')
-            continue
-else:
-    train_score = []
-    test_score = []
-    class_label = dp.make_class_labels(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
-                                                 'choose classes labels', 'class_labels').values())
-    for train_len in range(100, 1400, 100):
-        bayes = BayesClassifier(dp.get_dataset_no_useless, train_len, class_label)
-        train_score.append(bayes.train())
-        test_score.append(bayes.predict())
-    vis.make_overlearn_check_plot(train_score, test_score, range(100, 1400, 100))
+    if test_flag:
+        print(dp.get_dataset_no_useless)
+        metric_collection = []
+        for train_l in range(int(len(dp.get_dataset_no_useless)*0.3),
+                             int(len(dp.get_dataset_no_useless)*0.8),
+                             int(len(dp.get_dataset_no_useless)*0.05)):
+            kmeans = KMeansClassifier(dp.get_dataset_no_useless, train_l)
+            for n_clusters in range(3, 30):
+                for m_iter in range(500, 1500, 200):
+                    kmeans.train(clusters=n_clusters, max_iter=m_iter)
+                    kmeans.predict()
+                    metric_collection.append(kmeans.metrics)
+                    if pairplot_flag:
+                        try:
+                            vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters_{m_iter}_learning_rate')
+                        except Exception as e:
+                            print(f'{e} has been dropped')
+        analyzer.metric_collection('KMeans', metric_collection)
+        analyzer.best_clustering_find()
+    else:
+        for it in range(0, 8):
+            kmeans_best = KMeansClassifier(dp.dataset_no_useless, 8750)
+            kmeans_best.train(5, 800)
+            kmeans_best.predict()
+            analyzer.separate_clusters(kmeans_best.get_clustered)
+            forest_test_scores = []
+            forest_train_scores = []
+            train_l_list = [i for i in range(int(len(kmeans_best.get_clustered) * 0.2),
+                                             int(len(kmeans_best.get_clustered) * 0.8), 100)]
+            for train_l in train_l_list:
+                forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
+                forest.train()
+                forest.predict()
+                analyzer.make_features_rate(forest.get_feature_importances, kmeans_best.get_data.columns, train_l)
+                forest_test_scores.append(forest.collect_test_score())
+                forest_train_scores.append(forest.collect_train_score())
+            analyzer.probability_per_cluster(kmeans_best.get_test)
+            analyzer.normal_check()
+            vis.make_overlearn_check_plot(forest_train_scores, forest_test_scores, train_l_list,
+                                          f'forest_test/random_forest_for_best_clustering{it}')
+            del kmeans_best
