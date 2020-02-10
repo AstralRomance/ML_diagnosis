@@ -1,11 +1,11 @@
-from matplotlib import pyplot as plt
-import pandas as pd
-
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
 from Analyzer import Analyzer
 from Classifier import KMeansClassifier, BayesClassifier, Forest
 from Visualizer import Visualizer
+from setup import Setup
+
+setup = Setup()
 
 interface = CustomConsoleInterface()
 vis = Visualizer()
@@ -14,7 +14,7 @@ analyzer = Analyzer()
 dp.parse()
 print(dp.get_dataset_no_useless)
 
-additional_info = False
+additional_info = True
 
 dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose useless', 'useless_columns').values())
@@ -36,7 +36,7 @@ Use coerce for ONLY numeric or already encoded data
 dp.dataset_to_numeric('coerce')
 #vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
 pairplot_flag = True
-test_flag = False
+test_flag = True
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
                                        'analysis_mode').values():
     if test_flag:
@@ -51,6 +51,7 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
                     kmeans.train(clusters=n_clusters, max_iter=m_iter)
                     kmeans.predict()
                     metric_collection.append(kmeans.metrics)
+                    test = kmeans.get_clustered
                     if pairplot_flag:
                         try:
                             vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters_{m_iter}_learning_rate')

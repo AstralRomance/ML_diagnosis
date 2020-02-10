@@ -75,7 +75,7 @@ class Visualizer:
         :param name: string use as path of filename
         :return: None
         '''
-        if ages[0] in data.columns:
+        if str(ages[0]) in data.columns:
             for age in ages:
                 data = data.drop(str(age), 1)
         sns.pairplot(data, hue='clusters', diag_kind='hist')
