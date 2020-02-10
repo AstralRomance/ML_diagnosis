@@ -3,14 +3,18 @@ import matplotlib.gridspec as gridspec
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
-'''
-Class for make plots
-'''
-
 
 class Visualizer:
-#   Make plot in euclidean space
-    def make_euclidean_space_plot(self, estimator_name, data, param, predicted=None, centers=None):
+    def make_euclidean_scatter_plot(self, estimator_name, data, param, predicted=None, centers=None):
+        '''
+            Form a scatter graph.
+        :param estimator_name: part of path. Using as directory name
+        :param data: points coordinates to make graph
+        :param param: estimator parameters. Use as graph name
+        :param predicted: use as color sequence
+        :param centers: centers of clusters
+        :return: None
+        '''
         fig = plt.figure()
         plt.scatter(data[:, 0], data[:, 1], c=predicted, s=50, cmap='viridis')
         if not centers.all():
@@ -23,6 +27,13 @@ class Visualizer:
             plt.close(fig)
 
     def make_compare_plot(self, points_x, points_y, name):
+        '''
+            Form graphs from lists in points_y.
+        :param points_x: points in ox. Same for all lists from points_y
+        :param points_y: list of point lists.
+        :param name: name of graph
+        :return: None
+        '''
         fig = plt.figure()
         number_of_graphics = max(list(map(len, [i for i in points_y])))
         gs = gridspec.GridSpec(number_of_graphics, 1, fig)
@@ -32,12 +43,24 @@ class Visualizer:
         plt.savefig(f'{name}.png')
 
     def make_simple_graph(self, points_x, i):
+        '''
+            Form a simple graph
+        :param points_x: values for graph
+        :param i: parameter use as number for graph name
+        :return: None
+        '''
         fig = plt.figure()
         plt.plot([x for x in points_x])
         plt.savefig(f'graphs/normal_analysis/intervals with step {i}.png')
         plt.close(fig)
 
     def make_heatmap(self, data, ages):
+        '''
+            Form a heatmap
+        :param data: data for heatmap
+        :param ages: ages columns for drop
+        :return: None
+        '''
         for age in ages:
             data = data.drop(str(age), 1)
         sns.heatmap(data.corr(), annot=True)
@@ -45,7 +68,14 @@ class Visualizer:
         plt.show()
 
     def make_pairplot(self, data, ages, name='new_pairplot'):
-        if ages[0] in data.columns:
+        '''
+            Form a plot in features space
+        :param data: data for graph
+        :param ages: columns for drop
+        :param name: string use as path of filename
+        :return: None
+        '''
+        if str(ages[0]) in data.columns:
             for age in ages:
                 data = data.drop(str(age), 1)
         sns.pairplot(data, hue='clusters', diag_kind='hist')
@@ -53,6 +83,14 @@ class Visualizer:
         plt.close('all')
 
     def make_overlearn_check_plot(self, train_sc, test_sc, ranging, clname):
+        '''
+            Form a plot for train and test distributions.
+        :param train_sc: points in train distribution
+        :param test_sc: points in test distribution
+        :param ranging: number of points. Same for train and test lists.
+        :param clname: string use as path of filename
+        :return: None
+        '''
         plt.plot(ranging, train_sc, label='train distr')
         plt.plot(ranging, test_sc, label='test distr')
         plt.legend()
@@ -60,10 +98,22 @@ class Visualizer:
         plt.close('all')
 
     def make_cluster_hist(self, clusters):
+        '''
+            Form a bar chart
+        :param clusters: list of clusters
+        :return: None
+        '''
         plt.hist(clusters)
         plt.show()
 
     def make_confusion_matrix(self, true_labels, predicted_labels, train_l):
+        '''
+            Form a confusion matrix.
+        :param true_labels: true labels from dataset
+        :param predicted_labels: predicted labels from dataset
+        :param train_l: length of train distribution. Use as part of filename
+        :return: None
+        '''
         fig = plt.figure(figsize=(9, 12))
         confusion = confusion_matrix(true_labels, predicted_labels)
         sns.heatmap(confusion, annot=True, square=True)

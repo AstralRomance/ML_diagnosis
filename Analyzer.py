@@ -8,6 +8,11 @@ class Analyzer:
         self.clusters_list = []
 
     def normal_check(self):
+        '''
+            Method check type of distribution in clusters
+            Form dataframes with result of normal test and math expectations if distribution is normal
+        :return: None
+        '''
         cluster_counter = 0
         normal_check_list = []
         math_exp = []
@@ -40,17 +45,33 @@ class Analyzer:
         math_exp_per_predictor.to_csv('metrics/math_expectations.csv', sep=';')
 
     def metric_collection(self, estimator_name, metric_set):
+        '''
+            Makes csv for Kmeans mertics
+        :param estimator_name:
+        :param metric_set: list of metrics and length parameter
+        :return: None
+        '''
         if estimator_name == 'KMeans':
             self.metric_dataset = pd.DataFrame(metric_set, columns=['number of clusters', 'train dataset length', 'test dataset length',
                                                                      'silhouette metric', 'calinski metric', 'david bolduin metric'])
             self.metric_dataset.to_csv(f'metrics/kmeans_clustering.csv')
 
     def separate_clusters(self, dataset):
+        '''
+            Form list with separated clusters
+        :param dataset: clustered dataset
+        :return: None
+        '''
         for i in range(self._get_number_of_clusters(dataset)):
             cluster = dataset[dataset['clusters'] == i]
             self.clusters_list.append(cluster.drop('clusters', 1))
 
     def probability_per_cluster(self, dataset):
+        '''
+            Count probability of entering in the cluster
+        :param dataset: clustered dataframe
+        :return: None
+        '''
         total_length = len(dataset)
         counter = 1
         for i in self.clusters_list:
@@ -58,6 +79,10 @@ class Analyzer:
             counter += 1
 
     def best_clustering_find(self):
+        '''
+            Find and form dataframe with best metrics of clustering.
+        :return: None
+        '''
         best_metrics = list(
                                 zip(
                                     ('silhouette metric', 'calinski metric', 'david bolduin metric'),
@@ -73,6 +98,12 @@ class Analyzer:
         best_df.to_csv('metrics/best_metrics.csv')
 
     def make_features_rate(self, forest_features, cols, train_l):
+        '''
+        :param forest_features: values of random forest features
+        :param cols: columns of dataset
+        :param train_l: length of train distribution. Use as part of pathfile
+        :return:
+        '''
         features = pd.DataFrame({'feature': cols, 'importance': forest_features}).sort_values(
             'importance', ascending=False)
         features.to_csv(f'metrics/random_forest_weights/predictors_weights_train_l_{train_l}.csv')
@@ -82,14 +113,30 @@ class Analyzer:
 
     #   Closed methods
     def _get_number_of_clusters(self, dataset):
+        '''
+        :param dataset: dataframe with clusters
+        :return: number of clusters
+        '''
         return len(set(dataset['clusters']))
 
     def _get_probability_per_cluster(self, total_length, cluster_length):
+        '''
+        :param total_length: length of clustered data
+        :param cluster_length: length of cluster
+        :return: probability of entering in cluster
+        '''
         return (cluster_length/total_length) * 100
 
     def math_expectation(self, predictors_list):
+        '''
+        :param predictors_list: list of predictor values
+        :return: math expectation for normal distribution
+        '''
         return sum(predictors_list)/len(predictors_list)
 
     @property
     def separated_clusters(self):
+        '''
+        :return: separated clusters
+        '''
         return self.clusters_list
