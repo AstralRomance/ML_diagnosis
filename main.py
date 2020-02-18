@@ -35,8 +35,8 @@ Use coerce for ONLY numeric or already encoded data
 '''
 dp.dataset_to_numeric('coerce')
 #vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
-pairplot_flag = True
-test_flag = True
+pairplot_flag = False
+test_flag = False
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
                                        'analysis_mode').values():
     if test_flag:
@@ -55,29 +55,28 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
                     if pairplot_flag:
                         try:
                             vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters_{m_iter}_learning_rate')
+                            print(f'pairplot for train distribution {train_l} clusters {n_clusters} built successfully')
                         except Exception as e:
                             print(f'{e} has been dropped')
         analyzer.metric_collection('KMeans', metric_collection)
         analyzer.best_clustering_find()
     else:
-        for it in range(0, 8):
-            kmeans_best = KMeansClassifier(dp.dataset_no_useless, 8750)
-            kmeans_best.train(5, 800)
-            kmeans_best.predict()
-            analyzer.separate_clusters(kmeans_best.get_clustered)
-            forest_test_scores = []
-            forest_train_scores = []
-            train_l_list = [i for i in range(int(len(kmeans_best.get_clustered) * 0.2),
+        kmeans_best = KMeansClassifier(dp.dataset_no_useless, 15000)
+        kmeans_best.train(3, 900)
+        kmeans_best.predict()
+        analyzer.separate_clusters(kmeans_best.get_clustered)
+        forest_test_scores = []
+        forest_train_scores = []
+        train_l_list = [i for i in range(int(len(kmeans_best.get_clustered) * 0.2),
                                              int(len(kmeans_best.get_clustered) * 0.8), 100)]
-            for train_l in train_l_list:
-                forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
-                forest.train()
-                forest.predict()
-                analyzer.make_features_rate(forest.get_feature_importances, kmeans_best.get_data.columns, train_l)
-                forest_test_scores.append(forest.collect_test_score())
-                forest_train_scores.append(forest.collect_train_score())
-            analyzer.probability_per_cluster(kmeans_best.get_test)
-            analyzer.normal_check()
-            vis.make_overlearn_check_plot(forest_train_scores, forest_test_scores, train_l_list,
-                                          f'forest_test/random_forest_for_best_clustering{it}')
-            del kmeans_best
+        for train_l in train_l_list:
+            forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
+            forest.train()
+            forest.predict()
+            analyzer.make_features_rate(forest.get_feature_importances, kmeans_best.get_data.columns, train_l)
+            forest_test_scores.append(forest.collect_test_score())
+            forest_train_scores.append(forest.collect_train_score())
+        analyzer.probability_per_cluster(kmeans_best.get_test)
+        analyzer.normal_check()
+        vis.make_overlearn_check_plot(forest_train_scores, forest_test_scores, train_l_list,
+                                          f'forest_test/random_forest_for_best_clustering')
