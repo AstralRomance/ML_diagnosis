@@ -54,18 +54,21 @@ class Visualizer:
         plt.savefig(f'graphs/normal_analysis/intervals with step {i}.png')
         plt.close(fig)
 
-    def make_heatmap(self, data, ages):
+    def make_heatmap(self, data, ages=None,  heatmap_name = None, cluster_n = None):
         '''
             Form a heatmap
         :param data: data for heatmap
         :param ages: ages columns for drop
         :return: None
         '''
-        for age in ages:
-            data = data.drop(str(age), 1)
+        try:
+            for age in ages:
+                data = data.drop(str(age), 1)
+        except Exception as e:
+            print(f'Found {e} while heatmap forming')
         sns.heatmap(data.corr(), annot=True)
-        plt.savefig(f'graphs/heatmap.png')
-        plt.show()
+        plt.savefig(f'graphs/clasification_heatmap/{heatmap_name}_{cluster_n}.png')
+        plt.close('all')
 
     def make_pairplot(self, data, ages, name='new_pairplot'):
         '''
@@ -121,3 +124,9 @@ class Visualizer:
         with open(f'heatmaps/heatmap{train_l}.txt', 'w') as hmp:
             hmp.write(str(confusion))
         plt.close(fig)
+
+    def distribution_hist(self, predictor, cluster_n, predictor_name):
+        sorted_features = sorted(predictor)
+        sns.kdeplot(sorted_features)
+        plt.savefig(f'graphs/predictor_per_cluster_distribution/distribution_in_{cluster_n}_for_{predictor_name}.png')
+        plt.close('all')

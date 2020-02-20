@@ -43,4 +43,5 @@ class Setup:
         os.mkdir(f'{os.getcwd()}/graphs/normal_analysis')
         os.mkdir(f'{os.getcwd()}/graphs/pairplots')
         os.mkdir(f'{os.getcwd()}/graphs/tsne')
+        os.mkdir(f'{os.getcwd()}/grapsh/predictor_per_cluster_distribution')
         print('graph subdirs setup succesfully')

@@ -34,7 +34,7 @@ Temporary numeric mode. Make menu for choice later. Coerce for another strange d
 Use coerce for ONLY numeric or already encoded data
 '''
 dp.dataset_to_numeric('coerce')
-#vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages)
+vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages, 'all_features', 'Not clustered')
 pairplot_flag = False
 test_flag = False
 if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
@@ -80,3 +80,8 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
         analyzer.normal_check()
         vis.make_overlearn_check_plot(forest_train_scores, forest_test_scores, train_l_list,
                                           f'forest_test/random_forest_for_best_clustering')
+        for counter, cluster in enumerate(analyzer.separated_clusters):
+            for predictor in cluster:
+                vis.distribution_hist(cluster[predictor], counter, predictor)
+            vis.make_heatmap(cluster, dp.get_ages, 'cluster_number', counter)
+
