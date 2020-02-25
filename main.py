@@ -11,34 +11,44 @@ interface = CustomConsoleInterface()
 vis = Visualizer()
 dp = DataPreparer('sources/dataset.xlsx')
 analyzer = Analyzer()
-dp.parse()
-print(dp.get_dataset_no_useless)
 
+dp.parse()
+print('FIRST PARSER USING')
+print(dp.get_dataset_no_useless['Диагнозы сопутствующие'])
+print('END OF FIRST PARSING PRINT')
 additional_info = True
+pairplot_flag = False
+test_flag = False
+
+print('START REPLACEING')
 
 dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose useless', 'useless_columns').values())
+print(dp.get_dataset_no_useless['Диагнозы сопутствующие'])
 if additional_info:
     dp.gender_changes(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                            'choose gender column', 'gender_column').values())
     dp.ages_change(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                         'choose age column', 'age_column').values())
+
     dp.replace_to_BMI(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose weight and height columns (following is important)',
                                                'BMI_replaceing').values())
+
 dp.invalid_check(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'Choose places to invalid checking',
                                                'Invalid check').values())
-'''
-Temporary numeric mode. Make menu for choice later. Coerce for another strange dataset
-Use coerce for ONLY numeric or already encoded data
-'''
-dp.dataset_to_numeric('coerce')
-vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages, 'all_features', 'Not clustered')
-pairplot_flag = False
-test_flag = False
-if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
-                                       'analysis_mode').values():
+
+
+analysis_mode = interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
+                                       'analysis_mode').values()
+if 'clustering' in analysis_mode:
+    '''
+    Temporary numeric mode. Make menu for choice later. Coerce for another strange dataset
+    Use coerce for ONLY numeric or already encoded data
+    '''
+    dp.dataset_to_numeric('coerce')
+    vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages, 'all_features', 'Not clustered')
     if test_flag:
         print(dp.get_dataset_no_useless)
         metric_collection = []
@@ -84,4 +94,9 @@ if 'clustering' in interface.make_list([{'name': 'clustering'}, {'name': 'classi
             for predictor in cluster:
                 vis.distribution_hist(cluster[predictor], counter, predictor)
             vis.make_heatmap(cluster, dp.get_ages, 'cluster_number', counter)
+elif 'classification' in analysis_mode:
+    classification_dataframe = dp.separate_class_labels(*interface.make_checkbox(
+                                            [{'name': i} for i in dp.get_dataset_no_useless.keys()],
+                                            'Choice class labels',
+                                            'classes:').values())
 

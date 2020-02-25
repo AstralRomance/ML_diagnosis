@@ -13,7 +13,6 @@ age_group_matrix - matrix for using as patients age groups; -1 -1 -1 for empty a
 sex_matrix - matrix for using as sex; -1 -1 for empty age cells 
 '''
 
-
 class DataPreparer:
     def __init__(self, parsed_file):
         '''
@@ -30,13 +29,16 @@ class DataPreparer:
             Form dataframe from excel table. Make csv for safety
         :return: None
         '''
-        if 'res_dataset.csv' in os.getcwd():
+        if 'res_dataset.csv' in os.listdir(os.getcwd()):
             output_dataset = pd.read_csv('res_dataset.csv', sep=';')
+            print('Use csv as a source')
         else:
+            print('Start excel reading')
             data_xls = pd.read_excel(self.to_parse, index_col=0)
             data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
             output_dataset = pd.read_csv('res_dataset.csv', sep=';')
             output_dataset = shuffle(output_dataset)
+            print('Formed csv source')
         output_dataset = output_dataset.fillna(-1)
         self.dataset_unmodified = output_dataset
         self.dataset_no_useless = self.dataset_unmodified
@@ -59,13 +61,19 @@ class DataPreparer:
                 if temp/len(self.dataset_no_useless[columns]) >= 0.5:
                     self.dataset_no_useless = self.dataset_no_useless.drop(columns, 1)
                 temp = 0
-            for i in self.dataset_no_useless:
-                for val in self.dataset_no_useless[i]:
-                    if (type(val) == str) and (('>' in val) or ('<' in val)):
-                        self.dataset_no_useless.loc[self.dataset_no_useless[i] == val, i] = val[1::]
         else:
             print('Nothing to delete')
             return 0
+
+    def replace_undef_symbols(self, columns):
+        '''
+        :param columns: list of columns for replace symbols like < > in string type predictors
+        :return:
+        '''
+        for i in columns:
+            for val in self.dataset_no_useless[i]:
+                if (type(val) == str) and (('>' in val) or ('<' in val)):
+                    self.dataset_no_useless.loc[self.dataset_no_useless[i] == val, i] = val[1::]
 
     def dataset_to_numeric(self, numeric_mode=None):
         '''
@@ -147,19 +155,34 @@ class DataPreparer:
             print('Nothing to replace')
             return 0
 
-    def make_class_labels(self, labels):
-        '''
-            encoded class label
-        :param labels: name of column chosen as class label
-        :return: encoded class label values
-        '''
-        self.class_label = labels
-        le = preprocessing.LabelEncoder()
-        le.fit(self.dataset_no_useless[labels])
-        self.dataset_no_useless[labels] = le.transform(self.dataset_no_useless[labels])
-        return labels
+    def separate_class_labels(self, labels):
+        max_len_main_diag = 0
+        max_len_additional_diag = 0
+        main_diag = True
+        main_diag_list = []
+        additional_diag_list = []
+        for label in labels:
+            for val in self.dataset_no_useless[label]:
+                if main_diag:
+                    try:
+                        if len(val.split('>>')) > max_len_main_diag:
+                            max_len_main_diag = len(val.split('>>'))
+                        main_diag_list.append(val.split('>>'))
+                    except Exception as e:
+                        main_diag_list.append([-1, ])
+                else:
+                    try:
+                        if len(val.split('>>')) > max_len_additional_diag:
+                            max_len_additional_diag = len(val.split('>>'))
+                        additional_diag_list.append(val.split('>>'))
+                    except Exception as e:
+                        additional_diag_list.append([-1, ])
+            main_diag = not main_diag
+        main_diag_df = pd.DataFrame(main_diag_list, columns=[f'Main_diag_{i}' for i in range(max_len_main_diag)]).fillna(-1)
+        add_diag_df = pd.DataFrame(additional_diag_list, columns=[f'Add_diag_{i}' for i in range(max_len_additional_diag)]).fillna(-1)
 
-#   change source file
+
+
     def change_parsed_file(self, file_path):
         '''
             Change file with data. Isnt use now.
