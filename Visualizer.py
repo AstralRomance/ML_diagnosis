@@ -54,18 +54,23 @@ class Visualizer:
         plt.savefig(f'graphs/normal_analysis/intervals with step {i}.png')
         plt.close(fig)
 
-    def make_heatmap(self, data, ages):
+    def make_heatmap(self, data, ages=None,  heatmap_name = None, cluster_n = None):
         '''
             Form a heatmap
         :param data: data for heatmap
         :param ages: ages columns for drop
         :return: None
         '''
-        for age in ages:
-            data = data.drop(str(age), 1)
-        sns.heatmap(data.corr(), annot=True)
-        plt.savefig(f'graphs/heatmap.png')
-        plt.show()
+        plt.figure(figsize=(20,20))
+        try:
+            for age in ages:
+                data = data.drop(str(age), 1)
+        except Exception as e:
+            print(f'Found {e} while heatmap forming')
+        #sns.set(font_scale=2.0)
+        sns.heatmap(data.corr(), annot=True, linewidths=.3, cbar=False, square=True)
+        plt.savefig(f'graphs/clasification_heatmap/{heatmap_name}_{cluster_n}.png')
+        plt.close('all')
 
     def make_pairplot(self, data, ages, name='new_pairplot'):
         '''
@@ -97,15 +102,6 @@ class Visualizer:
         plt.savefig(f'graphs/{clname}.png')
         plt.close('all')
 
-    def make_cluster_hist(self, clusters):
-        '''
-            Form a bar chart
-        :param clusters: list of clusters
-        :return: None
-        '''
-        plt.hist(clusters)
-        plt.show()
-
     def make_confusion_matrix(self, true_labels, predicted_labels, train_l):
         '''
             Form a confusion matrix.
@@ -114,10 +110,23 @@ class Visualizer:
         :param train_l: length of train distribution. Use as part of filename
         :return: None
         '''
-        fig = plt.figure(figsize=(9, 12))
+        plt.figure(figsize=(15, 15))
         confusion = confusion_matrix(true_labels, predicted_labels)
         sns.heatmap(confusion, annot=True, square=True)
         plt.savefig(f'graphs/classification_heatmap/heatmap_{train_l}.png', bbox_inches='tight')
         with open(f'heatmaps/heatmap{train_l}.txt', 'w') as hmp:
             hmp.write(str(confusion))
-        plt.close(fig)
+        plt.close('all')
+
+    def distribution_hist(self, predictor, cluster_n, predictor_name):
+        '''
+            Form a histogram.
+        :param predictor: list of predictor values
+        :param cluster_n: cluster number
+        :param predictor_name: name of predictor
+        :return:
+        '''
+        sorted_features = sorted(predictor)
+        sns.kdeplot(sorted_features)
+        plt.savefig(f'graphs/predictor_per_cluster_distribution/distribution_in_{cluster_n}_for_{predictor_name}.png')
+        plt.close('all')
