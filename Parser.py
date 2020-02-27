@@ -92,7 +92,6 @@ class DataPreparer:
         :return: 0 if gender_column is None
         '''
         if gender_column:
-            temp = []
             self.dataset_no_useless[gender_column] = self.dataset_no_useless[gender_column].map(
                 {'Мужской': 0, 'Женский': 1}
             )
