@@ -13,18 +13,12 @@ dp = DataPreparer('sources/dataset.xlsx')
 analyzer = Analyzer()
 
 dp.parse()
-print('FIRST PARSER USING')
-print(dp.get_dataset_no_useless['Диагнозы сопутствующие'])
-print('END OF FIRST PARSING PRINT')
 additional_info = True
-pairplot_flag = False
-test_flag = False
-
-print('START REPLACEING')
+pairplot_flag = True
+test_flag = True
 
 dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                                'choose useless', 'useless_columns').values())
-print(dp.get_dataset_no_useless['Диагнозы сопутствующие'])
 if additional_info:
     dp.gender_changes(*interface.make_list([{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                            'choose gender column', 'gender_column').values())
@@ -40,13 +34,21 @@ dp.invalid_check(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_n
                                                'Invalid check').values())
 
 
-analysis_mode = interface.make_list([{'name': 'clustering'}, {'name': 'classification'}], 'Choose analysis mode',
-                                       'analysis_mode').values()
+analysis_mode = interface.make_list([{'name': 'clustering'}, {'name': 'classification'}, {'name': 'custom_classification'}],
+                                    'Choose analysis mode',
+                                    'analysis_mode').values()
 if 'clustering' in analysis_mode:
     '''
     Temporary numeric mode. Make menu for choice later. Coerce for another strange dataset
     Use coerce for ONLY numeric or already encoded data
     '''
+    #Flag is True if analysis need diagnosis separating
+    separate_flag = True
+    if separate_flag:
+        dp.separate_class_labels(*interface.make_checkbox(
+            [{'name': i} for i in dp.get_dataset_no_useless.keys()],
+            'Choice class labels',
+            'classes:').values())
     dp.dataset_to_numeric('coerce')
     vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages, 'all_features', 'Not clustered')
     if test_flag:
@@ -62,12 +64,12 @@ if 'clustering' in analysis_mode:
                     kmeans.predict()
                     metric_collection.append(kmeans.metrics)
                     test = kmeans.get_clustered
-                    if pairplot_flag:
-                        try:
-                            vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters_{m_iter}_learning_rate')
-                            print(f'pairplot for train distribution {train_l} clusters {n_clusters} built successfully')
-                        except Exception as e:
-                            print(f'{e} has been dropped')
+                if pairplot_flag:
+                    try:
+                        vis.make_pairplot(kmeans.get_clustered, dp.get_ages, f'{train_l}_trainL_{n_clusters}_clusters')
+                        print(f'pairplot for train distribution {train_l} clusters {n_clusters} built successfully')
+                    except Exception as e:
+                        print(f'{e} has been dropped')
         analyzer.metric_collection('KMeans', metric_collection)
         analyzer.best_clustering_find()
     else:
@@ -95,8 +97,17 @@ if 'clustering' in analysis_mode:
                 vis.distribution_hist(cluster[predictor], counter, predictor)
             vis.make_heatmap(cluster, dp.get_ages, 'cluster_number', counter)
 elif 'classification' in analysis_mode:
-    classification_dataframe = dp.separate_class_labels(*interface.make_checkbox(
+    dp.separate_class_labels(*interface.make_checkbox(
                                             [{'name': i} for i in dp.get_dataset_no_useless.keys()],
                                             'Choice class labels',
                                             'classes:').values())
+    for train_l in range(int(len(dp.get_dataset_no_useless) * 0.4), int(len(dp.get_dataset_no_useless)*0.8),
+                         int(len(dp.get_dataset_no_useless)*0.05)):
+        forest = Forest(dp.get_dataset_no_useless, 'Main_diag_0', train_l)
+        forest.train()
+        print(forest.predict())
+    dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
+                                               'choose useless', 'useless_columns').values())
+    print(dp.get_dataset_no_useless)
+
 

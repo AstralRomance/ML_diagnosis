@@ -20,6 +20,7 @@ class DataPreparer:
         '''
         self.age_intervals = [(-1, 0), (0, 17), (17, 21), (21, 55), (55, 75), (75, 90), (90, 1000)]
         self.to_parse = parsed_file
+        self.encoder = preprocessing.LabelEncoder()
         self.patient_id = None
         self.dataset_unmodified = None
         self.dataset_no_useless = None
@@ -177,10 +178,23 @@ class DataPreparer:
                     except Exception as e:
                         additional_diag_list.append([-1, ])
             main_diag = not main_diag
-        main_diag_df = pd.DataFrame(main_diag_list, columns=[f'Main_diag_{i}' for i in range(max_len_main_diag)]).fillna(-1)
-        add_diag_df = pd.DataFrame(additional_diag_list, columns=[f'Add_diag_{i}' for i in range(max_len_additional_diag)]).fillna(-1)
+        main_diag_df = pd.DataFrame(main_diag_list, columns=[f'Main_diag_{i}'
+                                                             for i in range(max_len_main_diag)]).fillna(-1)
+        add_diag_df = pd.DataFrame(additional_diag_list, columns=[f'Add_diag_{i}'
+                                                                  for i in range(max_len_additional_diag)]).fillna(-1)
 
+        for frame in (main_diag_df, add_diag_df):
+            for column in frame:
+                frame[column] = frame[column].astype(str)
+                frame[column] = self._encode_class_labels(frame[column])
 
+        for label in labels:
+            self.dataset_no_useless = self.dataset_no_useless.drop(label, 1)
+        self.dataset_no_useless = pd.concat([self.dataset_no_useless, main_diag_df, add_diag_df], axis=1, join='inner')
+        self.dataset_no_useless = self.dataset_no_useless.fillna(-1)
+
+    def _encode_class_labels(self, label):
+        return self.encoder.fit_transform(label)
 
     def change_parsed_file(self, file_path):
         '''
