@@ -21,7 +21,7 @@ class Analyzer:
             middle_val = []
             print(f'Current cluster nubmer {cluster_counter}')
             for predictor_list in cluster:
-                print(f'Current distribution for predictor: {predictor_list}')
+                print(f'Distribution for predictor: {predictor_list}')
                 try:
                     if stats.normaltest(cluster[predictor_list])[1] < 3.27207e-11:
                         print('Seems normal')
@@ -119,18 +119,22 @@ class Analyzer:
         return self.metric_dataset
 
     def calc_predictors_interval(self):
-        predictor_scopes = pd.DataFrame()
-        print('-----------------------')
-        print(self.clusters_list)
-        print('-----------------------')
+        predictor_scopes = None
         for counter, cluster in enumerate(self.clusters_list):
             print(f'calculating intervals for cluster {counter}')
-            for column, counter in enumerate(cluster):
-                predictor_scopes[f'{column} min'][counter] = min(cluster[cluster[column] >= 0][column])
-                predictor_scopes[f'{column} max'][counter] = max(cluster[cluster[column] >= 0][column])
-        print(predictor_scopes)
+            predictor_scopes = pd.DataFrame(
+                                            [
+                                                [min(cluster[cluster[column] >= 0][column]) for column in cluster],
+                                                [max(cluster[cluster[column] >= 0][column]) for column in cluster],
+                                                list(map(lambda x, y: x-y, [max(cluster[cluster[column] >= 0][column]) for column in cluster], [min(cluster[cluster[column] >= 0][column]) for column in cluster]))
+                                            ],
+                                            columns=[column for column in cluster],
+                                            index=['min', 'max', 'range']
+                                            )
+            predictor_scopes.T.to_csv(f'metrics/range_of_predictor_cluster{counter}.csv')
 
-    #   Closed methods
+
+    #Closed methods
     def _get_number_of_clusters(self, dataset):
         '''
         :param dataset: dataframe with clusters

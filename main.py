@@ -98,7 +98,7 @@ if 'clustering' in analysis_mode:
             forest_train_scores.append(forest.collect_train_score('cross_validate'))
         analyzer.probability_per_cluster(kmeans_best.get_test)
         analyzer.normal_check()
-        #analyzer.calc_predictors_interval()
+        analyzer.calc_predictors_interval()
         test_len_list = [len(dp.get_dataset_no_useless) - i for i in train_l_list]
         #for i in range(len(forest_test_scores[0])):
         #    vis.make_overlearn_check_plot([k for k in forest_train_scores[:, i]], [k for k in forest_test_scores[:, i]], train_l_list,
