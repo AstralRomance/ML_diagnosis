@@ -40,7 +40,7 @@ class Visualizer:
         for i in range(number_of_graphics):
             fig.add_subplot(gs[i, 0], )
             plt.plot(points_x, [j[i] for j in points_y])
-        plt.savefig(f'{name}.png')
+        plt.savefig(f'graphs/{name}.png')
 
     def make_simple_graph(self, points_x, i):
         '''
@@ -67,7 +67,6 @@ class Visualizer:
                 data = data.drop(str(age), 1)
         except Exception as e:
             print(f'Found {e} while heatmap forming')
-        #sns.set(font_scale=2.0)
         sns.heatmap(data.corr(), annot=True, linewidths=.3, cbar=False, square=True)
         plt.savefig(f'graphs/clasification_heatmap/{heatmap_name}_{cluster_n}.png')
         plt.close('all')

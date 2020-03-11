@@ -9,6 +9,8 @@ from sklearn.metrics import silhouette_score
 from sklearn.metrics import calinski_harabasz_score
 from sklearn.metrics import davies_bouldin_score
 
+from sklearn.model_selection import cross_val_score
+
 '''
 Classifier parent class
 '''
@@ -113,6 +115,9 @@ class KMeansClassifier(Classifier):
         prediction = self.classifier.predict(self.get_test)
         self.dataset_clustered_labels = self.test_distr.copy()
         self.dataset_clustered_labels['clusters'] = prediction
+
+    def clusters_to_excel(self):
+        self.dataset_clustered_labels.to_excel('clustered_dataframe.xlsx', sheet_name='Sh1')
 
     def _kmeans_silhouette(self):
         '''
@@ -219,22 +224,41 @@ class Forest(Classifier):
         pred = self.classifier.predict(self.test_distr.drop(self.class_label, 1))
         return pred
 
-    def collect_test_score(self):
+    def collect_test_score(self, mode='score'):
         '''
-        :return: score metric on test distribution
+        :param mode:
+        :return:
         '''
-        self.score_write(
-            self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label]),
-            'test', len(self.train_distr))
-        return self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label])
+        if mode == 'score':
+            self.score_write(
+                self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label]),
+                'test', len(self.train_distr))
+            return self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label])
+        elif mode == 'cross_validate':
+            '''
+            self.score_write(
+                cross_val_score(self.test_distr.drop(self.test_distr.drop(self.class_label, 1)), self.test_distr[self.class_label], cv=4),
+                                'test', len(self.train_distr)
+            )
+            '''
+            return cross_val_score(self.classifier, self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label], cv=4)
 
-    def collect_train_score(self):
+    def collect_train_score(self, mode='score'):
         '''
         :return: score metric on train distribution
         '''
-        self.score_write(self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label]),
-                         'train', len(self.train_distr))
-        return self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
+        if mode == 'score':
+            self.score_write(self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label]),
+                             'train', len(self.train_distr))
+            return self.classifier.score(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label])
+        elif mode == 'cross_validate':
+            '''
+            self.score_write(
+                cross_val_score(self.train_distr.drop(self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label]), cv=4
+                                ), 'train', len(self.train_distr)
+            )
+            '''
+            return cross_val_score(self.classifier, self.train_distr.drop(self.class_label, 1), self.train_distr[self.class_label], cv=4)
 
     def score_write(self, score, distr, train_len):
         '''

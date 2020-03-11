@@ -130,13 +130,10 @@ class DataPreparer:
         :return: 0 if column is empty
         '''
         if ages_column:
-            for i in self.age_intervals:
-                for j in self.dataset_no_useless[ages_column]:
-                    if j in range(*i):
-                        self.dataset_no_useless[str(i)] = 1
-                    else:
-                        self.dataset_no_useless[str(i)] = 0
+            for interval in self.age_intervals:
+                self.dataset_no_useless[str(interval)] = [1 if j in range(*interval) else 0 for j in self.dataset_no_useless[ages_column]]
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
+            print(self.dataset_no_useless)
         else:
             print('Nothing to replace')
             return 0
