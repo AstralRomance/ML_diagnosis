@@ -235,12 +235,6 @@ class Forest(Classifier):
                 'test', len(self.train_distr))
             return self.classifier.score(self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label])
         elif mode == 'cross_validate':
-            '''
-            self.score_write(
-                cross_val_score(self.test_distr.drop(self.test_distr.drop(self.class_label, 1)), self.test_distr[self.class_label], cv=4),
-                                'test', len(self.train_distr)
-            )
-            '''
             return cross_val_score(self.classifier, self.test_distr.drop(self.class_label, 1), self.test_distr[self.class_label], cv=4)
 
     def collect_train_score(self, mode='score'):

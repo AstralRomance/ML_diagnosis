@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
+import warnings
 
 
 class Visualizer:
@@ -61,11 +62,12 @@ class Visualizer:
         :param ages: ages columns for drop
         :return: None
         '''
+        warnings.filterwarnings('error')
         plt.figure(figsize=(20,20))
         try:
             for age in ages:
                 data = data.drop(str(age), 1)
-        except Exception as e:
+        except (Exception, Warning) as e:
             print(f'Found {e} while heatmap forming')
         sns.heatmap(data.corr(), annot=True, linewidths=.3, cbar=False, square=True)
         plt.savefig(f'graphs/clasification_heatmap/{heatmap_name}_{cluster_n}.png')
@@ -86,7 +88,7 @@ class Visualizer:
         plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
         plt.close('all')
 
-    def make_overlearn_check_plot(self, train_sc, test_sc, ranging, clname):
+    def make_overlearn_check_plot(self, train_sc, test_sc, ranging, clname, cmp_flag=False):
         '''
             Form a plot for train and test distributions.
         :param train_sc: points in train distribution
@@ -117,7 +119,7 @@ class Visualizer:
             hmp.write(str(confusion))
         plt.close('all')
 
-    def distribution_hist(self, predictor, cluster_n, predictor_name):
+    def distribution_hist(self, predictor_val, cluster_n, predictor_name,  predictor_prob=None):
         '''
             Form a histogram.
         :param predictor: list of predictor values
@@ -125,7 +127,9 @@ class Visualizer:
         :param predictor_name: name of predictor
         :return:
         '''
-        sorted_features = sorted(predictor)
+        sorted_features = sorted(predictor_val)
         sns.kdeplot(sorted_features)
+        if predictor_prob:
+            plt.hist([i for i in predictor_prob.keys()], [i for i in predictor_prob.values()])
         plt.savefig(f'graphs/predictor_per_cluster_distribution/distribution_in_{cluster_n}_for_{predictor_name}.png')
         plt.close('all')

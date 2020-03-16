@@ -1,6 +1,6 @@
 from scipy import stats
 import pandas as pd
-
+from collections import Counter
 
 class Analyzer:
     def __init__(self, input_data=None):
@@ -133,6 +133,9 @@ class Analyzer:
                                             )
             predictor_scopes.T.to_csv(f'metrics/range_of_predictor_cluster{counter}.csv')
 
+    def make_probs_for_pred(self, predictor):
+        cnt = Counter(predictor)
+        return {i: cnt[i]/len(predictor) for i in cnt.keys()}
 
     #Closed methods
     def _get_number_of_clusters(self, dataset):

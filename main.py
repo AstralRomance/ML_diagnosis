@@ -1,3 +1,5 @@
+import numpy
+
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
 from Analyzer import Analyzer
@@ -5,10 +7,9 @@ from Classifier import KMeansClassifier, BayesClassifier, Forest
 from Visualizer import Visualizer
 from setup import Setup
 import logging
-import warnings
 
 logging.basicConfig(filename='debug/debug.log', level=logging.DEBUG)
-warnings.filterwarnings('error')
+
 setup = Setup()
 
 interface = CustomConsoleInterface()
@@ -59,7 +60,6 @@ if 'clustering' in analysis_mode:
     dp.dataset_to_numeric('coerce')
     vis.make_heatmap(dp.get_dataset_no_useless, dp.get_ages, 'all_features', 'Not clustered')
     if test_flag:
-        print(dp.get_dataset_no_useless)
         metric_collection = []
         for train_l in range(int(len(dp.get_dataset_no_useless)*0.3),
                              int(len(dp.get_dataset_no_useless)*0.8),
@@ -85,11 +85,13 @@ if 'clustering' in analysis_mode:
         kmeans_best.predict()
         kmeans_best.clusters_to_excel()
         analyzer.separate_clusters(kmeans_best.get_clustered)
+        vis.make_pairplot(kmeans_best.get_clustered, dp.get_ages, f'best_clustering_pairplot')
         forest_test_scores = []
         forest_train_scores = []
         train_l_list = [i for i in range(int(len(kmeans_best.get_clustered) * 0.2),
-                                             int(len(kmeans_best.get_clustered) * 0.8), 100)]
+                                         int(len(kmeans_best.get_clustered) * 0.8), 100)]
         for train_l in train_l_list:
+            #forest = Forest(kmeans_best.get_clustered[kmeans_best.get_clustered.Main_diag_0 != -1], 'Main_diag_0', train_l)
             forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
             forest.train()
             forest.predict()
@@ -100,19 +102,26 @@ if 'clustering' in analysis_mode:
         analyzer.normal_check()
         analyzer.calc_predictors_interval()
         test_len_list = [len(dp.get_dataset_no_useless) - i for i in train_l_list]
-        #for i in range(len(forest_test_scores[0])):
-        #    vis.make_overlearn_check_plot([k for k in forest_train_scores[:, i]], [k for k in forest_test_scores[:, i]], train_l_list,
-        #                                  f'forest_test/random_forest_for_best_clustering{i}')
-        #vis.make_compare_plot(test_len_list, forest_test_scores, 'forest_test/random_forest_for_best_clustering_test')
-        #vis.make_compare_plot(train_l_list, forest_train_scores, 'forest_test/random_forest_for_best_clustering_train')
+
+        if type(forest_test_scores[0]) == numpy.ndarray:
+            train_val = list(zip(*forest_train_scores))
+            test_val = list(zip(*forest_test_scores))
+            for counter, metrics in enumerate(train_val):
+                vis.make_overlearn_check_plot(train_val[counter], test_val[counter], train_l_list, f'forest_test/random_forest_for_best_clustering_{counter}_crossval')
+        else:
+            vis.make_overlearn_check_plot(forest_train_scores, forest_test_scores, train_l_list, 'forest_test/random_forest_for_best_clustering')
 
         for counter, cluster in enumerate(analyzer.separated_clusters):
-            try:
-                for predictor in cluster:
-                    vis.distribution_hist(cluster[predictor], counter, predictor)
-            except Warning as e:
-                print(f'Found {e} Warning check this')
-                continue
+            for predictor in cluster:
+                try:
+                    #!!!!!!!!!!!!!!!!!!!!
+                    print('***********************')
+                    print(analyzer.make_probs_for_pred(cluster[predictor]))
+                    print('***********************')
+                    vis.distribution_hist(cluster[predictor], counter, predictor, analyzer.make_probs_for_pred(cluster[predictor]))
+                    #!!!!!!!!!!!!!!!!!!!!!
+                except Warning as e:
+                    print(f'{e} Warning in {cluster[predictor]}')
             vis.make_heatmap(cluster, dp.get_ages, 'cluster_number', counter)
 
 elif 'classification' in analysis_mode:
