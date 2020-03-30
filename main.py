@@ -3,7 +3,7 @@ import numpy
 from Parser import DataPreparer
 from CustomConsoleInterface import CustomConsoleInterface
 from Analyzer import Analyzer
-from Classifier import KMeansClassifier, BayesClassifier, Forest
+from Classifier import KMeansClassifier, Forest
 from Visualizer import Visualizer
 from setup import Setup
 import logging
@@ -91,7 +91,6 @@ if 'clustering' in analysis_mode:
         train_l_list = [i for i in range(int(len(kmeans_best.get_clustered) * 0.2),
                                          int(len(kmeans_best.get_clustered) * 0.8), 100)]
         for train_l in train_l_list:
-            #forest = Forest(kmeans_best.get_clustered[kmeans_best.get_clustered.Main_diag_0 != -1], 'Main_diag_0', train_l)
             forest = Forest(kmeans_best.get_clustered, 'clusters', train_l)
             forest.train()
             forest.predict()
@@ -107,35 +106,17 @@ if 'clustering' in analysis_mode:
             train_val = list(zip(*forest_train_scores))
             test_val = list(zip(*forest_test_scores))
             for counter, metrics in enumerate(train_val):
-                vis.make_overlearn_check_plot(train_val[counter], test_val[counter], train_l_list, f'forest_test/random_forest_for_best_clustering_{counter}_crossval')
+                vis.make_overfit_check_plot(train_val[counter], test_val[counter], train_l_list, f'forest_test/random_forest_for_best_clustering_{counter}_crossval')
         else:
-            vis.make_overlearn_check_plot(forest_train_scores, forest_test_scores, train_l_list, 'forest_test/random_forest_for_best_clustering')
+            vis.make_overfit_check_plot(forest_train_scores, forest_test_scores, train_l_list, 'forest_test/random_forest_for_best_clustering')
 
         for counter, cluster in enumerate(analyzer.separated_clusters):
             for predictor in cluster:
                 try:
-                    #!!!!!!!!!!!!!!!!!!!!
-                    print('***********************')
-                    print(analyzer.make_probs_for_pred(cluster[predictor]))
-                    print('***********************')
                     vis.distribution_hist(cluster[predictor], counter, predictor, analyzer.make_probs_for_pred(cluster[predictor]))
-                    #!!!!!!!!!!!!!!!!!!!!!
                 except Warning as e:
                     print(f'{e} Warning in {cluster[predictor]}')
             vis.make_heatmap(cluster, dp.get_ages, 'cluster_number', counter)
 
-elif 'classification' in analysis_mode:
-    dp.separate_class_labels(*interface.make_checkbox(
-                                            [{'name': i} for i in dp.get_dataset_no_useless.keys()],
-                                            'Choice class labels',
-                                            'classes:').values())
-    for train_l in range(int(len(dp.get_dataset_no_useless) * 0.4), int(len(dp.get_dataset_no_useless)*0.8),
-                         int(len(dp.get_dataset_no_useless)*0.05)):
-        forest = Forest(dp.get_dataset_no_useless, 'clusters', train_l)
-        forest.train()
-        print(forest.predict())
-    dp.remove_useless(*interface.make_checkbox([{'name': i} for i in dp.get_dataset_no_useless.keys()],
-                                               'choose useless', 'useless_columns').values())
-    print(dp.get_dataset_no_useless)
 
 

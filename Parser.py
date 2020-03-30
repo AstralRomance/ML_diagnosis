@@ -31,13 +31,13 @@ class DataPreparer:
         :return: None
         '''
         if 'res_dataset.csv' in os.listdir(os.getcwd()):
-            output_dataset = pd.read_csv('res_dataset.csv', sep=';')
+            output_dataset = pd.read_csv('res_dataset.csv')
             print('Use csv as a source')
         else:
             print('Start excel reading')
             data_xls = pd.read_excel(self.to_parse, index_col=0)
-            data_xls.to_csv('res_dataset.csv', encoding='utf-8', sep=';')
-            output_dataset = pd.read_csv('res_dataset.csv', sep=';')
+            data_xls.to_csv('res_dataset.csv', encoding='utf-8')
+            output_dataset = pd.read_csv('res_dataset.csv')
             output_dataset = shuffle(output_dataset)
             print('Formed csv source')
         output_dataset = output_dataset.fillna(-1)
@@ -118,7 +118,8 @@ class DataPreparer:
                 else:
                     bmi.append(weight_bmi[count]/((height_bmi[count]/100)**2))
             self.dataset_no_useless['BMI'] = bmi
-            self.dataset_no_useless = self.dataset_no_useless.drop(self.dataset_no_useless[self.dataset_no_useless.BMI > 300].index)
+            self.dataset_no_useless = self.dataset_no_useless.drop(
+                self.dataset_no_useless[self.dataset_no_useless.BMI > 300].index)
         else:
             print('Nothing to replace')
             return 0
@@ -131,7 +132,8 @@ class DataPreparer:
         '''
         if ages_column:
             for interval in self.age_intervals:
-                self.dataset_no_useless[str(interval)] = [1 if j in range(*interval) else 0 for j in self.dataset_no_useless[ages_column]]
+                self.dataset_no_useless[str(interval)] = [1 if j in range(*interval) else
+                                                          0 for j in self.dataset_no_useless[ages_column]]
             self.dataset_no_useless = self.dataset_no_useless.drop(ages_column, 1)
             print(self.dataset_no_useless)
         else:

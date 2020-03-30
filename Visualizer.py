@@ -88,7 +88,7 @@ class Visualizer:
         plt.savefig(f'graphs/pairplots/pairplot_{name}.png')
         plt.close('all')
 
-    def make_overlearn_check_plot(self, train_sc, test_sc, ranging, clname, cmp_flag=False):
+    def make_overfit_check_plot(self, train_sc, test_sc, ranging, clname, cmp_flag=False):
         '''
             Form a plot for train and test distributions.
         :param train_sc: points in train distribution
@@ -129,7 +129,7 @@ class Visualizer:
         '''
         sorted_features = sorted(predictor_val)
         sns.kdeplot(sorted_features)
-        if predictor_prob:
-            plt.hist([i for i in predictor_prob.keys()], [i for i in predictor_prob.values()])
+        #if predictor_prob:
+        #    plt.hist([i for i in predictor_prob.keys()], [i for i in predictor_prob.values()])
         plt.savefig(f'graphs/predictor_per_cluster_distribution/distribution_in_{cluster_n}_for_{predictor_name}.png')
         plt.close('all')

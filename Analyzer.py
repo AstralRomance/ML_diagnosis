@@ -42,7 +42,7 @@ class Analyzer:
         normal_df = pd.DataFrame(normal_check_list, columns=[i for i in self.clusters_list[0]])
         normal_df.to_csv('metrics/normal_check.csv')
         math_exp_per_predictor = pd.DataFrame(math_exp, columns=[i for i in self.clusters_list[0]])
-        math_exp_per_predictor.to_csv('metrics/avg_values.csv', sep=';')
+        math_exp_per_predictor.to_csv('metrics/avg_values.csv')
 
     def metric_collection(self, estimator_name, metric_set):
         '''
